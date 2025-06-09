@@ -10,7 +10,6 @@ const router = express.Router();
 const JWT_SECRET = 'replace_this_secret'; // In real use, keep in env variable
 const TOKEN_EXPIRY = '7d';
 
-
 /**
  * @swagger
  * /auth/register/person:
@@ -116,8 +115,26 @@ router.post('/register/person', async (req, res) => {
  */
 // Registration for company
 router.post('/register/company', async (req, res) => {
-  const { cnpj, isMei, email, senha, razaoSocial, inscricaoEstadual, inscricaoMunicipal, telefone } = req.body;
-  if (!cnpj || typeof isMei !== 'boolean' || !email || !senha || !razaoSocial || !inscricaoEstadual || !inscricaoMunicipal || !telefone) {
+  const {
+    cnpj,
+    isMei,
+    email,
+    senha,
+    razaoSocial,
+    inscricaoEstadual,
+    inscricaoMunicipal,
+    telefone,
+  } = req.body;
+  if (
+    !cnpj ||
+    typeof isMei !== 'boolean' ||
+    !email ||
+    !senha ||
+    !razaoSocial ||
+    !inscricaoEstadual ||
+    !inscricaoMunicipal ||
+    !telefone
+  ) {
     return res.status(400).json({ message: 'Dados incompletos' });
   }
   const existing = await data.findUserByEmail(email);
@@ -174,8 +191,25 @@ router.post('/login', async (req, res) => {
   if (!user) return res.status(401).json({ message: 'Credenciais inválidas' });
   const match = await bcrypt.compare(senha, user.senha);
   if (!match) return res.status(401).json({ message: 'Credenciais inválidas' });
-  const token = jwt.sign({ id: user.id, type: user.type }, JWT_SECRET, { expiresIn: TOKEN_EXPIRY });
-  res.json({ token });
+  const token = jwt.sign({ id: user.id, type: user.type }, JWT_SECRET, {
+    expiresIn: TOKEN_EXPIRY,
+  });
+
+  res.json({
+    token,
+    user: {
+      id: user.id,
+      tipo: user.type,
+      email: user.email,
+      nome: user.nome_completo || user.razao_social,
+      telefone: user.telefone,
+      cnpj: user.cnpj,
+      isMei: user.is_mei,
+      cpf: user.cpf,
+      inscricaoEstadual: user.inscricao_estadual,
+      inscricaoMunicipal: user.inscricao_municipal,
+    },
+  });
 });
 
 /**
