@@ -1,4 +1,4 @@
-const { User, ResetCode } = require('./db');
+const { User, ResetCode } = require('../models');
 
 async function findUserByEmail(email) {
   return User.findOne({ where: { email } });
