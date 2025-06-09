@@ -25,3 +25,7 @@ npm run dev
 ```
 
 A API utilizará o banco PostgreSQL configurado e enviará e-mails via o serviço definido.
+
+## Documentação Swagger
+
+Após iniciar o servidor acesse `http://localhost:3000/docs` para visualizar a documentação interativa dos endpoints.

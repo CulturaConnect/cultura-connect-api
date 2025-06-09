@@ -11,6 +11,41 @@ const JWT_SECRET = 'replace_this_secret'; // In real use, keep in env variable
 const TOKEN_EXPIRY = '7d';
 
 
+/**
+ * @swagger
+ * /auth/register/person:
+ *   post:
+ *     summary: Registra uma pessoa
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - nomeCompleto
+ *               - cpf
+ *               - email
+ *               - telefone
+ *               - senha
+ *             properties:
+ *               nomeCompleto:
+ *                 type: string
+ *               cpf:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               telefone:
+ *                 type: string
+ *               senha:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Registrado com sucesso
+ *       400:
+ *         description: Dados incompletos
+ */
 // Registration for person
 router.post('/register/person', async (req, res) => {
   const { nomeCompleto, cpf, email, telefone, senha } = req.body;
@@ -35,6 +70,50 @@ router.post('/register/person', async (req, res) => {
   res.status(201).json({ message: 'Registrado com sucesso' });
 });
 
+/**
+ * @swagger
+ * /auth/register/company:
+ *   post:
+ *     summary: Registra uma empresa
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - cnpj
+ *               - isMei
+ *               - email
+ *               - senha
+ *               - razaoSocial
+ *               - inscricaoEstadual
+ *               - inscricaoMunicipal
+ *               - telefone
+ *             properties:
+ *               cnpj:
+ *                 type: string
+ *               isMei:
+ *                 type: boolean
+ *               email:
+ *                 type: string
+ *               senha:
+ *                 type: string
+ *               razaoSocial:
+ *                 type: string
+ *               inscricaoEstadual:
+ *                 type: string
+ *               inscricaoMunicipal:
+ *                 type: string
+ *               telefone:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Registrado com sucesso
+ *       400:
+ *         description: Dados incompletos
+ */
 // Registration for company
 router.post('/register/company', async (req, res) => {
   const { cnpj, isMei, email, senha, razaoSocial, inscricaoEstadual, inscricaoMunicipal, telefone } = req.body;
@@ -62,6 +141,32 @@ router.post('/register/company', async (req, res) => {
   res.status(201).json({ message: 'Registrado com sucesso' });
 });
 
+/**
+ * @swagger
+ * /auth/login:
+ *   post:
+ *     summary: Realiza login do usuário
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - senha
+ *             properties:
+ *               email:
+ *                 type: string
+ *               senha:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Token JWT
+ *       401:
+ *         description: Credenciais inválidas
+ */
 // Login
 router.post('/login', async (req, res) => {
   const { email, senha } = req.body;
@@ -73,6 +178,22 @@ router.post('/login', async (req, res) => {
   res.json({ token });
 });
 
+/**
+ * @swagger
+ * /auth/profile:
+ *   get:
+ *     summary: Retorna perfil do usuário autenticado
+ *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Perfil do usuário
+ *       401:
+ *         description: Token inválido
+ *       404:
+ *         description: Usuário não encontrado
+ */
 // Protected profile route
 router.get('/profile', authMiddleware, async (req, res) => {
   const user = await data.findUserById(req.user.id);
@@ -80,6 +201,29 @@ router.get('/profile', authMiddleware, async (req, res) => {
   res.json({ user });
 });
 
+/**
+ * @swagger
+ * /auth/recover:
+ *   post:
+ *     summary: Envia código de recuperação de senha
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *             properties:
+ *               email:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Código enviado
+ *       404:
+ *         description: Usuário não encontrado
+ */
 // Request password recovery code
 router.post('/recover', async (req, res) => {
   const { email } = req.body;
@@ -103,6 +247,37 @@ router.post('/recover', async (req, res) => {
   res.json({ message: 'Código enviado' });
 });
 
+/**
+ * @swagger
+ * /auth/reset:
+ *   post:
+ *     summary: Redefine a senha utilizando código
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - code
+ *               - novaSenha
+ *             properties:
+ *               email:
+ *                 type: string
+ *               code:
+ *                 type: string
+ *               novaSenha:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Senha redefinida com sucesso
+ *       400:
+ *         description: Código inválido
+ *       404:
+ *         description: Usuário não encontrado
+ */
 // Reset password with code
 router.post('/reset', async (req, res) => {
   const { email, code, novaSenha } = req.body;
