@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const { v4: uuidv4 } = require('uuid');
 const data = require('./data');
 const { sendEmail } = require('./email');
+const authMiddleware = require('./authMiddleware');
 
 const router = express.Router();
 const JWT_SECRET = 'replace_this_secret'; // In real use, keep in env variable
@@ -72,13 +73,28 @@ router.post('/login', async (req, res) => {
   res.json({ token });
 });
 
+// Protected profile route
+router.get('/profile', authMiddleware, async (req, res) => {
+  const user = await data.findUserById(req.user.id);
+  if (!user) return res.status(404).json({ message: 'Usuário não encontrado' });
+  res.json({ user });
+});
+
 // Request password recovery code
 router.post('/recover', async (req, res) => {
   const { email } = req.body;
   const user = await data.findUserByEmail(email);
   if (!user) return res.status(404).json({ message: 'Usuário não encontrado' });
-  const code = Math.floor(100000 + Math.random() * 900000).toString();
-  await data.saveResetCode(email, code);
+  const existing = await data.getResetCode(email);
+  const now = new Date();
+  let code;
+  if (existing && existing.expires_at > now) {
+    code = existing.code;
+  } else {
+    code = Math.floor(100000 + Math.random() * 900000).toString();
+    const expires = new Date(now.getTime() + 60 * 60 * 1000); // 1h
+    await data.saveResetCode(email, code, expires);
+  }
   try {
     await sendEmail(email, 'Recuperação de Senha', `Seu código: ${code}`);
   } catch (e) {
@@ -90,8 +106,8 @@ router.post('/recover', async (req, res) => {
 // Reset password with code
 router.post('/reset', async (req, res) => {
   const { email, code, novaSenha } = req.body;
-  const savedCode = await data.getResetCode(email);
-  if (!savedCode || savedCode !== code) {
+  const saved = await data.getResetCode(email);
+  if (!saved || saved.code !== code || saved.expires_at < new Date()) {
     return res.status(400).json({ message: 'Código inválido' });
   }
   const user = await data.findUserByEmail(email);
