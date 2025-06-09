@@ -2,16 +2,13 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { v4: uuidv4 } = require('uuid');
-const { users, resetCodes } = require('./data');
+const data = require('./data');
+const { sendEmail } = require('./email');
 
 const router = express.Router();
 const JWT_SECRET = 'replace_this_secret'; // In real use, keep in env variable
 const TOKEN_EXPIRY = '7d';
 
-// Helper to find user by email
-function findUserByEmail(email) {
-  return users.find(u => u.email === email);
-}
 
 // Registration for person
 router.post('/register/person', async (req, res) => {
@@ -19,7 +16,8 @@ router.post('/register/person', async (req, res) => {
   if (!nomeCompleto || !cpf || !email || !telefone || !senha) {
     return res.status(400).json({ message: 'Dados incompletos' });
   }
-  if (findUserByEmail(email)) {
+  const existing = await data.findUserByEmail(email);
+  if (existing) {
     return res.status(400).json({ message: 'Email já registrado' });
   }
   const hashed = await bcrypt.hash(senha, 10);
@@ -32,7 +30,7 @@ router.post('/register/person', async (req, res) => {
     telefone,
     senha: hashed,
   };
-  users.push(user);
+  await data.createPerson(user);
   res.status(201).json({ message: 'Registrado com sucesso' });
 });
 
@@ -42,7 +40,8 @@ router.post('/register/company', async (req, res) => {
   if (!cnpj || typeof isMei !== 'boolean' || !email || !senha || !razaoSocial || !inscricaoEstadual || !inscricaoMunicipal || !telefone) {
     return res.status(400).json({ message: 'Dados incompletos' });
   }
-  if (findUserByEmail(email)) {
+  const existing = await data.findUserByEmail(email);
+  if (existing) {
     return res.status(400).json({ message: 'Email já registrado' });
   }
   const hashed = await bcrypt.hash(senha, 10);
@@ -58,14 +57,14 @@ router.post('/register/company', async (req, res) => {
     inscricaoMunicipal,
     telefone,
   };
-  users.push(user);
+  await data.createCompany(user);
   res.status(201).json({ message: 'Registrado com sucesso' });
 });
 
 // Login
 router.post('/login', async (req, res) => {
   const { email, senha } = req.body;
-  const user = findUserByEmail(email);
+  const user = await data.findUserByEmail(email);
   if (!user) return res.status(401).json({ message: 'Credenciais inválidas' });
   const match = await bcrypt.compare(senha, user.senha);
   if (!match) return res.status(401).json({ message: 'Credenciais inválidas' });
@@ -74,27 +73,32 @@ router.post('/login', async (req, res) => {
 });
 
 // Request password recovery code
-router.post('/recover', (req, res) => {
+router.post('/recover', async (req, res) => {
   const { email } = req.body;
-  const user = findUserByEmail(email);
+  const user = await data.findUserByEmail(email);
   if (!user) return res.status(404).json({ message: 'Usuário não encontrado' });
   const code = Math.floor(100000 + Math.random() * 900000).toString();
-  resetCodes.set(email, code);
-  console.log(`Código de recuperação para ${email}: ${code}`);
+  await data.saveResetCode(email, code);
+  try {
+    await sendEmail(email, 'Recuperação de Senha', `Seu código: ${code}`);
+  } catch (e) {
+    console.error('Erro ao enviar email', e);
+  }
   res.json({ message: 'Código enviado' });
 });
 
 // Reset password with code
 router.post('/reset', async (req, res) => {
   const { email, code, novaSenha } = req.body;
-  const savedCode = resetCodes.get(email);
+  const savedCode = await data.getResetCode(email);
   if (!savedCode || savedCode !== code) {
     return res.status(400).json({ message: 'Código inválido' });
   }
-  const user = findUserByEmail(email);
+  const user = await data.findUserByEmail(email);
   if (!user) return res.status(404).json({ message: 'Usuário não encontrado' });
-  user.senha = await bcrypt.hash(novaSenha, 10);
-  resetCodes.delete(email);
+  const hashed = await bcrypt.hash(novaSenha, 10);
+  await data.updatePassword(email, hashed);
+  await data.deleteResetCode(email);
   res.json({ message: 'Senha redefinida com sucesso' });
 });
 
