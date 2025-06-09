@@ -10,10 +10,18 @@ Crie um arquivo `.env` ou defina as seguintes variáveis de ambiente:
 - `MAIL_USER` – conta de e-mail (ex. Gmail) utilizada para envio dos códigos de recuperação.
 - `MAIL_PASS` – senha ou token dessa conta.
 
-Execute `npm install` para instalar as dependências e então inicie o servidor com:
+Execute `npm install` para instalar as dependências. Para iniciar o servidor em 
+produção utilize:
 
 ```bash
-node src/index.js
+npm start
+```
+
+Durante o desenvolvimento é possível executar com recarregamento automático util
+izando:
+
+```bash
+npm run dev
 ```
 
 A API utilizará o banco PostgreSQL configurado e enviará e-mails via o serviço definido.
