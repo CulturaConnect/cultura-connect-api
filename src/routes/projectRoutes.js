@@ -23,6 +23,40 @@ const router = express.Router();
  *             properties:
  *               nome:
  *                 type: string
+ *               segmento:
+ *                 type: string
+ *               inicio:
+ *                 type: string
+ *                 format: date-time
+ *               fim:
+ *                 type: string
+ *                 format: date-time
+ *               empresa_responsavel:
+ *                 type: string
+ *               modelo:
+ *                 type: string
+ *               tipo_responsavel_legal:
+ *                 type: string
+ *               titulo_oficial:
+ *                 type: string
+ *               areas_execucao:
+ *                 type: object
+ *               resumo:
+ *                 type: string
+ *               objetivos_gerais:
+ *                 type: string
+ *               metas:
+ *                 type: string
+ *               cronograma_atividades:
+ *                 type: object
+ *               responsavel_principal:
+ *                 type: string
+ *               responsavel_principal_cpf:
+ *                 type: string
+ *               equipe:
+ *                 type: object
+ *               responsavel_legal_id:
+ *                 type: string
  *     responses:
  *       201:
  *         description: Projeto criado
@@ -81,6 +115,49 @@ router.get('/:id', authMiddleware, projectController.get);
  *         required: true
  *         schema:
  *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               nome:
+ *                 type: string
+ *               segmento:
+ *                 type: string
+ *               inicio:
+ *                 type: string
+ *                 format: date-time
+ *               fim:
+ *                 type: string
+ *                 format: date-time
+ *               empresa_responsavel:
+ *                 type: string
+ *               modelo:
+ *                 type: string
+ *               tipo_responsavel_legal:
+ *                 type: string
+ *               titulo_oficial:
+ *                 type: string
+ *               areas_execucao:
+ *                 type: object
+ *               resumo:
+ *                 type: string
+ *               objetivos_gerais:
+ *                 type: string
+ *               metas:
+ *                 type: string
+ *               cronograma_atividades:
+ *                 type: object
+ *               responsavel_principal:
+ *                 type: string
+ *               responsavel_principal_cpf:
+ *                 type: string
+ *               equipe:
+ *                 type: object
+ *               responsavel_legal_id:
+ *                 type: string
  *     responses:
  *       200:
  *         description: Projeto atualizado
