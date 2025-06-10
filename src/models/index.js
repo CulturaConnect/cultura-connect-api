@@ -45,4 +45,35 @@ const ResetCode = sequelize.define('ResetCode', {
   timestamps: false,
 });
 
-module.exports = { sequelize, User, ResetCode };
+const Project = sequelize.define('Project', {
+  id: {
+    type: DataTypes.UUID,
+    primaryKey: true,
+    allowNull: false,
+  },
+  nome: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  segmento: DataTypes.STRING,
+  inicio: DataTypes.DATE,
+  fim: DataTypes.DATE,
+  empresa_responsavel: DataTypes.STRING,
+  modelo: DataTypes.STRING,
+  tipo_responsavel_legal: DataTypes.STRING,
+  titulo_oficial: DataTypes.STRING,
+  areas_execucao: DataTypes.JSONB,
+  resumo: DataTypes.TEXT,
+  objetivos_gerais: DataTypes.TEXT,
+  metas: DataTypes.TEXT,
+  cronograma_atividades: DataTypes.JSONB,
+  responsavel_principal: DataTypes.STRING,
+  responsavel_principal_cpf: DataTypes.STRING,
+  equipe: DataTypes.JSONB,
+  responsavel_legal_id: DataTypes.UUID,
+}, {
+  tableName: 'projects',
+  timestamps: false,
+});
+
+module.exports = { sequelize, User, ResetCode, Project };
