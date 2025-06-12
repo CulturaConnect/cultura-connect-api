@@ -17,6 +17,9 @@ async function create(req, res) {
       retencao: '',
     };
   }
+  if (!data.areas_execucao) data.areas_execucao = [];
+  if (!data.cronograma_atividades) data.cronograma_atividades = [];
+  if (!data.equipe) data.equipe = [];
   data.id = uuidv4();
   const project = await projectService.createProject(data);
   res.status(201).json(project);
@@ -34,7 +37,11 @@ async function get(req, res) {
 }
 
 async function update(req, res) {
-  const project = await projectService.updateProject(req.params.id, req.body);
+  const data = req.body;
+  if (data.areas_execucao === undefined) data.areas_execucao = [];
+  if (data.cronograma_atividades === undefined) data.cronograma_atividades = [];
+  if (data.equipe === undefined) data.equipe = [];
+  const project = await projectService.updateProject(req.params.id, data);
   if (!project) return res.status(404).json({ message: 'Projeto não encontrado' });
   res.json(project);
 }

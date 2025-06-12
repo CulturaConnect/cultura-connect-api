@@ -55,7 +55,24 @@ const router = express.Router();
  *               titulo_oficial:
  *                 type: string
  *               areas_execucao:
- *                 type: object
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     rua:
+ *                       type: string
+ *                     cep:
+ *                       type: string
+ *                     logradouro:
+ *                       type: string
+ *                     numero:
+ *                       type: string
+ *                     complemento:
+ *                       type: string
+ *                     bairro:
+ *                       type: string
+ *                     cidade:
+ *                       type: string
  *               resumo:
  *                 type: string
  *               objetivos_gerais:
@@ -63,13 +80,29 @@ const router = express.Router();
  *               metas:
  *                 type: string
  *               cronograma_atividades:
- *                 type: object
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     titulo:
+ *                       type: string
+ *                     descricao:
+ *                       type: string
  *               responsavel_principal:
  *                 type: string
  *               responsavel_principal_cpf:
  *                 type: string
  *               equipe:
- *                 type: object
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     nome:
+ *                       type: string
+ *                     funcao:
+ *                       type: string
+ *                     cpf_cnpj:
+ *                       type: string
  *               responsavel_legal_id:
  *                 type: string
  *     responses:
@@ -171,7 +204,24 @@ router.get('/:id', authMiddleware, projectController.get);
  *               titulo_oficial:
  *                 type: string
  *               areas_execucao:
- *                 type: object
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     rua:
+ *                       type: string
+ *                     cep:
+ *                       type: string
+ *                     logradouro:
+ *                       type: string
+ *                     numero:
+ *                       type: string
+ *                     complemento:
+ *                       type: string
+ *                     bairro:
+ *                       type: string
+ *                     cidade:
+ *                       type: string
  *               resumo:
  *                 type: string
  *               objetivos_gerais:
@@ -179,13 +229,29 @@ router.get('/:id', authMiddleware, projectController.get);
  *               metas:
  *                 type: string
  *               cronograma_atividades:
- *                 type: object
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     titulo:
+ *                       type: string
+ *                     descricao:
+ *                       type: string
  *               responsavel_principal:
  *                 type: string
  *               responsavel_principal_cpf:
  *                 type: string
  *               equipe:
- *                 type: object
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     nome:
+ *                       type: string
+ *                     funcao:
+ *                       type: string
+ *                     cpf_cnpj:
+ *                       type: string
  *               responsavel_legal_id:
  *                 type: string
  *     responses:
