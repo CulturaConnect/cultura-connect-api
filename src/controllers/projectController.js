@@ -6,6 +6,17 @@ async function create(req, res) {
   if (!data.nome) {
     return res.status(400).json({ message: 'Nome do projeto é obrigatório' });
   }
+  if (!data.modelo) {
+    data.modelo = {
+      missao: '',
+      visao: '',
+      mercado: '',
+      publico_alvo: '',
+      receita: '',
+      proposta_valor: '',
+      retencao: '',
+    };
+  }
   data.id = uuidv4();
   const project = await projectService.createProject(data);
   res.status(201).json(project);

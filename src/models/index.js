@@ -59,7 +59,7 @@ const Project = sequelize.define('Project', {
   inicio: DataTypes.DATE,
   fim: DataTypes.DATE,
   empresa_responsavel: DataTypes.STRING,
-  modelo: DataTypes.STRING,
+  modelo: DataTypes.JSONB,
   tipo_responsavel_legal: DataTypes.STRING,
   titulo_oficial: DataTypes.STRING,
   areas_execucao: DataTypes.JSONB,

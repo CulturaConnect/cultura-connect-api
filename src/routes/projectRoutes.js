@@ -34,7 +34,22 @@ const router = express.Router();
  *               empresa_responsavel:
  *                 type: string
  *               modelo:
- *                 type: string
+ *                 type: object
+ *                 properties:
+ *                   missao:
+ *                     type: string
+ *                   visao:
+ *                     type: string
+ *                   mercado:
+ *                     type: string
+ *                   publico_alvo:
+ *                     type: string
+ *                   receita:
+ *                     type: string
+ *                   proposta_valor:
+ *                     type: string
+ *                   retencao:
+ *                     type: string
  *               tipo_responsavel_legal:
  *                 type: string
  *               titulo_oficial:
@@ -135,7 +150,22 @@ router.get('/:id', authMiddleware, projectController.get);
  *               empresa_responsavel:
  *                 type: string
  *               modelo:
- *                 type: string
+ *                 type: object
+ *                 properties:
+ *                   missao:
+ *                     type: string
+ *                   visao:
+ *                     type: string
+ *                   mercado:
+ *                     type: string
+ *                   publico_alvo:
+ *                     type: string
+ *                   receita:
+ *                     type: string
+ *                   proposta_valor:
+ *                     type: string
+ *                   retencao:
+ *                     type: string
  *               tipo_responsavel_legal:
  *                 type: string
  *               titulo_oficial:
