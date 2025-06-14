@@ -31,8 +31,6 @@ const router = express.Router();
  *               fim:
  *                 type: string
  *                 format: date-time
- *               empresa_responsavel:
- *                 type: string
  *               modelo:
  *                 type: object
  *                 properties:
@@ -50,8 +48,6 @@ const router = express.Router();
  *                     type: string
  *                   retencao:
  *                     type: string
- *               tipo_responsavel_legal:
- *                 type: string
  *               titulo_oficial:
  *                 type: string
  *               areas_execucao:
@@ -180,8 +176,6 @@ router.get('/:id', authMiddleware, projectController.get);
  *               fim:
  *                 type: string
  *                 format: date-time
- *               empresa_responsavel:
- *                 type: string
  *               modelo:
  *                 type: object
  *                 properties:
@@ -199,8 +193,6 @@ router.get('/:id', authMiddleware, projectController.get);
  *                     type: string
  *                   retencao:
  *                     type: string
- *               tipo_responsavel_legal:
- *                 type: string
  *               titulo_oficial:
  *                 type: string
  *               areas_execucao:

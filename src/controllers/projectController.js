@@ -1,5 +1,6 @@
 const { v4: uuidv4 } = require('uuid');
 const projectService = require('../services/projectService');
+const companyUserService = require('../services/companyUserService');
 
 async function create(req, res) {
   const data = req.body;
@@ -20,6 +21,15 @@ async function create(req, res) {
   if (!data.areas_execucao) data.areas_execucao = [];
   if (!data.cronograma_atividades) data.cronograma_atividades = [];
   if (!data.equipe) data.equipe = [];
+  if (data.responsavel_legal_id) {
+    const allowed = await companyUserService.userBelongsToCompany(
+      req.user.id,
+      data.responsavel_legal_id,
+    );
+    if (!allowed) {
+      return res.status(400).json({ message: 'Usuário não associado à empresa' });
+    }
+  }
   data.id = uuidv4();
   const project = await projectService.createProject(data);
   res.status(201).json(project);
@@ -41,6 +51,15 @@ async function update(req, res) {
   if (data.areas_execucao === undefined) data.areas_execucao = [];
   if (data.cronograma_atividades === undefined) data.cronograma_atividades = [];
   if (data.equipe === undefined) data.equipe = [];
+  if (data.responsavel_legal_id) {
+    const allowed = await companyUserService.userBelongsToCompany(
+      req.user.id,
+      data.responsavel_legal_id,
+    );
+    if (!allowed) {
+      return res.status(400).json({ message: 'Usuário não associado à empresa' });
+    }
+  }
   const project = await projectService.updateProject(req.params.id, data);
   if (!project) return res.status(404).json({ message: 'Projeto não encontrado' });
   res.json(project);
