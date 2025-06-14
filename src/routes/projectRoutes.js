@@ -1,6 +1,9 @@
 const express = require('express');
 const projectController = require('../controllers/projectController');
 const authMiddleware = require('../middlewares/authMiddleware');
+const multer = require('multer');
+
+const upload = multer({ storage: multer.memoryStorage() });
 
 const router = express.Router();
 
@@ -271,5 +274,35 @@ router.put('/:id', authMiddleware, projectController.update);
  *         description: Projeto não encontrado
  */
 router.delete('/:id', authMiddleware, projectController.remove);
+
+/**
+ * @swagger
+ * /projects/{id}/imagem:
+ *   post:
+ *     summary: Faz upload da imagem do projeto
+ *     tags: [Projects]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               imagem:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       200:
+ *         description: URL da imagem enviada
+ */
+router.post('/:id/imagem', authMiddleware, upload.single('imagem'), projectController.uploadImage);
 
 module.exports = router;
