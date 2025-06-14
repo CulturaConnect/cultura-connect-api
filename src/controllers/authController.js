@@ -113,7 +113,8 @@ async function login(req, res) {
 async function profile(req, res) {
   const user = await userService.findUserById(req.user.id);
   if (!user) return res.status(404).json({ message: 'Usuário não encontrado' });
-  res.json({ user });
+  const { senha, ...safe } = user.toJSON();
+  res.json({ user: safe });
 }
 
 async function recoverPassword(req, res) {

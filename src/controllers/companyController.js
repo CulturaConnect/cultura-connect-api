@@ -14,7 +14,11 @@ async function addUser(req, res) {
 async function listUsers(req, res) {
   const { id } = req.params;
   const users = await companyService.getUsersForCompany(id);
-  res.json(users);
+  const sanitized = users.map(u => {
+    const { senha, ...rest } = u.toJSON();
+    return rest;
+  });
+  res.json(sanitized);
 }
 
 module.exports = { addUser, listUsers };
