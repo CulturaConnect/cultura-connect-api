@@ -24,6 +24,10 @@ izando:
 npm run dev
 ```
 
+Na primeira execução, o `sequelize.sync()` criará automaticamente as tabelas
+definidas em `src/models`. Certifique-se de que o banco configurado está ativo
+para que tabelas como `company_users` e `projects` sejam criadas corretamente.
+
 A API utilizará o banco PostgreSQL configurado e enviará e-mails via o serviço definido.
 
 ## Documentação Swagger
