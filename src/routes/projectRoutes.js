@@ -18,12 +18,15 @@ const router = express.Router();
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
  *             type: object
  *             required:
  *               - nome
  *             properties:
+ *               imagem:
+ *                 type: string
+ *                 format: binary
  *               nome:
  *                 type: string
  *               segmento:
@@ -108,7 +111,7 @@ const router = express.Router();
  *       400:
  *         description: Dados inválidos
  */
-router.post('/', authMiddleware, projectController.create);
+router.post('/', authMiddleware, upload.single('imagem'), projectController.create);
 
 /**
  * @swagger
@@ -163,7 +166,7 @@ router.get('/:id', authMiddleware, projectController.get);
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
  *             type: object
  *             properties:
