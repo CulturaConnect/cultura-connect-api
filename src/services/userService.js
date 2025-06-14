@@ -4,6 +4,10 @@ async function findUserByEmail(email) {
   return User.findOne({ where: { email } });
 }
 
+async function findUserByCpf(cpf) {
+  return User.findOne({ where: { cpf } });
+}
+
 async function findUserById(id) {
   return User.findByPk(id);
 }
@@ -55,6 +59,7 @@ async function deleteResetCode(email) {
 
 module.exports = {
   findUserByEmail,
+  findUserByCpf,
   findUserById,
   createPerson,
   createCompany,

@@ -2,6 +2,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { v4: uuidv4 } = require('uuid');
 const userService = require('../services/userService');
+const companyService = require('../services/companyUserService');
 const { sendEmail } = require('../services/emailService');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'replace_this_secret';
@@ -40,6 +41,7 @@ async function registerCompany(req, res) {
     inscricaoEstadual,
     inscricaoMunicipal,
     telefone,
+    usuariosCpfs,
   } = req.body;
   if (
     !cnpj ||
@@ -71,7 +73,14 @@ async function registerCompany(req, res) {
     telefone,
   };
   await userService.createCompany(user);
-  res.status(201).json({ message: 'Registrado com sucesso' });
+  if (Array.isArray(usuariosCpfs)) {
+    for (const cpf of usuariosCpfs) {
+      const u = await userService.findUserByCpf(cpf);
+      if (!u) return res.status(404).json({ message: 'Usuário não encontrado', cpf });
+      await companyService.addUserToCompany(user.id, u.id);
+    }
+  }
+  res.status(201).json({ message: 'Registrado com sucesso', id: user.id });
 }
 
 async function login(req, res) {
