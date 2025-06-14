@@ -21,6 +21,15 @@ async function create(req, res) {
   if (!data.areas_execucao) data.areas_execucao = [];
   if (!data.cronograma_atividades) data.cronograma_atividades = [];
   if (!data.equipe) data.equipe = [];
+  if (data.responsavel_principal_id) {
+    const allowed = await companyUserService.userBelongsToCompany(
+      req.user.id,
+      data.responsavel_principal_id,
+    );
+    if (!allowed) {
+      return res.status(400).json({ message: 'Usuário não associado à empresa' });
+    }
+  }
   if (data.responsavel_legal_id) {
     const allowed = await companyUserService.userBelongsToCompany(
       req.user.id,
@@ -51,6 +60,15 @@ async function update(req, res) {
   if (data.areas_execucao === undefined) data.areas_execucao = [];
   if (data.cronograma_atividades === undefined) data.cronograma_atividades = [];
   if (data.equipe === undefined) data.equipe = [];
+  if (data.responsavel_principal_id) {
+    const allowed = await companyUserService.userBelongsToCompany(
+      req.user.id,
+      data.responsavel_principal_id,
+    );
+    if (!allowed) {
+      return res.status(400).json({ message: 'Usuário não associado à empresa' });
+    }
+  }
   if (data.responsavel_legal_id) {
     const allowed = await companyUserService.userBelongsToCompany(
       req.user.id,

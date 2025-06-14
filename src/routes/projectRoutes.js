@@ -84,9 +84,7 @@ const router = express.Router();
  *                       type: string
  *                     descricao:
  *                       type: string
- *               responsavel_principal:
- *                 type: string
- *               responsavel_principal_cpf:
+ *               responsavel_principal_id:
  *                 type: string
  *               equipe:
  *                 type: array
@@ -229,9 +227,7 @@ router.get('/:id', authMiddleware, projectController.get);
  *                       type: string
  *                     descricao:
  *                       type: string
- *               responsavel_principal:
- *                 type: string
- *               responsavel_principal_cpf:
+ *               responsavel_principal_id:
  *                 type: string
  *               equipe:
  *                 type: array
