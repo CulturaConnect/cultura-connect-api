@@ -11,4 +11,9 @@ async function getUsersForCompany(companyId) {
   return User.findAll({ where: { id: ids } });
 }
 
-module.exports = { addUserToCompany, getUsersForCompany };
+async function userBelongsToCompany(companyId, userId) {
+  const link = await CompanyUser.findOne({ where: { company_id: companyId, user_id: userId } });
+  return !!link;
+}
+
+module.exports = { addUserToCompany, getUsersForCompany, userBelongsToCompany };
