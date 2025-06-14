@@ -89,4 +89,26 @@ async function remove(req, res) {
   res.status(204).send();
 }
 
-module.exports = { create, list, get, update, remove };
+async function uploadImage(req, res) {
+  const { id } = req.params;
+  if (!req.file) {
+    return res.status(400).json({ message: 'Nenhum arquivo enviado' });
+  }
+  const project = await projectService.getProjectById(id);
+  if (!project) return res.status(404).json({ message: 'Projeto não encontrado' });
+  try {
+    const key = `projects/${id}/${Date.now()}_${req.file.originalname}`;
+    const url = await require('../services/s3Service').uploadFile(
+      req.file.buffer,
+      key,
+      req.file.mimetype,
+    );
+    await projectService.updateProject(id, { imagem_url: url });
+    res.json({ imagem_url: url });
+  } catch (e) {
+    console.error('Erro ao enviar imagem', e);
+    res.status(500).json({ message: 'Erro ao salvar imagem' });
+  }
+}
+
+module.exports = { create, list, get, update, remove, uploadImage };
