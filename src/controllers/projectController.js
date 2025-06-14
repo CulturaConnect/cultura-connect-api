@@ -4,6 +4,12 @@ const companyUserService = require('../services/companyUserService');
 
 async function create(req, res) {
   const data = req.body;
+  const jsonFields = ['modelo', 'areas_execucao', 'cronograma_atividades', 'equipe'];
+  jsonFields.forEach(f => {
+    if (typeof data[f] === 'string') {
+      try { data[f] = JSON.parse(data[f]); } catch (_) {}
+    }
+  });
   if (!data.nome) {
     return res.status(400).json({ message: 'Nome do projeto é obrigatório' });
   }
@@ -40,6 +46,20 @@ async function create(req, res) {
     }
   }
   data.id = uuidv4();
+  if (req.file) {
+    try {
+      const key = `projects/${data.id}/${Date.now()}_${req.file.originalname}`;
+      const url = await require('../services/s3Service').uploadFile(
+        req.file.buffer,
+        key,
+        req.file.mimetype,
+      );
+      data.imagem_url = url;
+    } catch (e) {
+      console.error('Erro ao enviar imagem', e);
+      return res.status(500).json({ message: 'Erro ao salvar imagem' });
+    }
+  }
   const project = await projectService.createProject(data);
   res.status(201).json(project);
 }

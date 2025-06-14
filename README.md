@@ -38,4 +38,4 @@ A API utilizará o banco PostgreSQL configurado e enviará e-mails via o serviç
 
 Após iniciar o servidor acesse `http://localhost:3000/docs` para visualizar a documentação interativa dos endpoints.
 
-O upload de imagens de projetos pode ser realizado enviando um arquivo via `POST /projects/{id}/imagem`.
+O upload de imagens de projetos pode ser realizado diretamente na criação enviando uma requisição `multipart/form-data` para `POST /projects` com o campo `imagem`. Também é possível enviar o arquivo posteriormente via `POST /projects/{id}/imagem`.
