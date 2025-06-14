@@ -76,4 +76,18 @@ const Project = sequelize.define('Project', {
   timestamps: false,
 });
 
-module.exports = { sequelize, User, ResetCode, Project };
+const CompanyUser = sequelize.define('CompanyUser', {
+  company_id: {
+    type: DataTypes.UUID,
+    allowNull: false,
+  },
+  user_id: {
+    type: DataTypes.UUID,
+    allowNull: false,
+  },
+}, {
+  tableName: 'company_users',
+  timestamps: false,
+});
+
+module.exports = { sequelize, User, ResetCode, Project, CompanyUser };

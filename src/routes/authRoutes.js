@@ -79,6 +79,10 @@ router.post('/register/person', authController.registerPerson);
  *                 type: string
  *               telefone:
  *                 type: string
+ *               usuariosCpfs:
+ *                 type: array
+ *                 items:
+ *                   type: string
  *     responses:
  *       201:
  *         description: Registrado com sucesso
