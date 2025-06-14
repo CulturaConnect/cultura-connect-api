@@ -65,8 +65,7 @@ const Project = sequelize.define('Project', {
   objetivos_gerais: DataTypes.TEXT,
   metas: DataTypes.TEXT,
   cronograma_atividades: DataTypes.JSONB,
-  responsavel_principal: DataTypes.STRING,
-  responsavel_principal_cpf: DataTypes.STRING,
+  responsavel_principal_id: DataTypes.UUID,
   equipe: DataTypes.JSONB,
   responsavel_legal_id: DataTypes.UUID,
 }, {
