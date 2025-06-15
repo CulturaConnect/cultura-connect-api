@@ -25,6 +25,7 @@ const User = sequelize.define('User', {
   },
   telefone: DataTypes.STRING,
   senha: DataTypes.STRING,
+  imagem_url: DataTypes.STRING,
   razao_social: DataTypes.STRING,
   inscricao_estadual: DataTypes.STRING,
   inscricao_municipal: DataTypes.STRING,

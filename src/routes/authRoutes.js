@@ -1,6 +1,9 @@
 const express = require('express');
 const authController = require('../controllers/authController');
 const authMiddleware = require('../middlewares/authMiddleware');
+const multer = require('multer');
+
+const upload = multer({ storage: multer.memoryStorage() });
 
 const router = express.Router();
 
@@ -136,6 +139,47 @@ router.post('/login', authController.login);
  *         description: Usuário não encontrado
  */
 router.get('/profile', authMiddleware, authController.profile);
+
+/**
+ * @swagger
+ * /auth/profile:
+ *   put:
+ *     summary: Atualiza o perfil do usuário autenticado
+ *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               nomeCompleto:
+ *                 type: string
+ *               telefone:
+ *                 type: string
+ *               senhaAtual:
+ *                 type: string
+ *               novaSenha:
+ *                 type: string
+ *               imagem:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       200:
+ *         description: Perfil atualizado
+ *       400:
+ *         description: Dados inválidos
+ *       404:
+ *         description: Usuário não encontrado
+ */
+router.put(
+  '/profile',
+  authMiddleware,
+  upload.single('imagem'),
+  authController.updateProfile,
+);
 
 /**
  * @swagger

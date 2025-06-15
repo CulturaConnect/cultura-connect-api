@@ -45,6 +45,11 @@ async function updatePassword(email, senha) {
   await User.update({ senha }, { where: { email } });
 }
 
+async function updateUser(id, data) {
+  await User.update(data, { where: { id } });
+  return findUserById(id);
+}
+
 async function saveResetCode(email, code, expiresAt) {
   await ResetCode.upsert({ email, code, expires_at: expiresAt });
 }
@@ -64,6 +69,7 @@ module.exports = {
   createPerson,
   createCompany,
   updatePassword,
+  updateUser,
   saveResetCode,
   getResetCode,
   deleteResetCode,
