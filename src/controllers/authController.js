@@ -106,6 +106,7 @@ async function login(req, res) {
       cpf: user.cpf,
       inscricaoEstadual: user.inscricao_estadual,
       inscricaoMunicipal: user.inscricao_municipal,
+      imagemUrl: user.imagem_url,
     },
   });
 }
@@ -114,6 +115,48 @@ async function profile(req, res) {
   const user = await userService.findUserById(req.user.id);
   if (!user) return res.status(404).json({ message: 'Usuário não encontrado' });
   const { senha, ...safe } = user.toJSON();
+  res.json({ user: safe });
+}
+
+async function updateProfile(req, res) {
+  const user = await userService.findUserById(req.user.id);
+  if (!user) return res.status(404).json({ message: 'Usuário não encontrado' });
+
+  const updates = {};
+  if (user.type === 'person') {
+    if (req.body.nomeCompleto) updates.nome_completo = req.body.nomeCompleto;
+    if (req.body.telefone) updates.telefone = req.body.telefone;
+  } else if (user.type === 'company') {
+    if (req.body.telefone) updates.telefone = req.body.telefone;
+  }
+
+  if (req.body.novaSenha) {
+    if (!req.body.senhaAtual)
+      return res.status(400).json({ message: 'Senha atual obrigatória' });
+    const match = await bcrypt.compare(req.body.senhaAtual, user.senha);
+    if (!match)
+      return res.status(400).json({ message: 'Senha atual incorreta' });
+    updates.senha = await bcrypt.hash(req.body.novaSenha, 10);
+  }
+
+  if (req.file) {
+    try {
+      const key = `users/${user.id}/${Date.now()}_${req.file.originalname}`;
+      const url = await require('../services/s3Service').uploadFile(
+        req.file.buffer,
+        key,
+        req.file.mimetype,
+      );
+      updates.imagem_url = url;
+    } catch (e) {
+      console.error('Erro ao enviar imagem', e);
+      return res.status(500).json({ message: 'Erro ao salvar imagem' });
+    }
+  }
+
+  await userService.updateUser(user.id, updates);
+  const updated = await userService.findUserById(user.id);
+  const { senha, ...safe } = updated.toJSON();
   res.json({ user: safe });
 }
 
@@ -158,6 +201,7 @@ module.exports = {
   registerCompany,
   login,
   profile,
+  updateProfile,
   recoverPassword,
   resetPassword,
 };
