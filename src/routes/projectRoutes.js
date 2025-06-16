@@ -2,6 +2,7 @@ const express = require('express');
 const projectController = require('../controllers/projectController');
 const authMiddleware = require('../middlewares/authMiddleware');
 const multer = require('multer');
+const asyncHandler = require('../utils/asyncHandler');
 
 const upload = multer({ storage: multer.memoryStorage() });
 
@@ -111,7 +112,7 @@ const router = express.Router();
  *       400:
  *         description: Dados inválidos
  */
-router.post('/', authMiddleware, upload.single('imagem'), projectController.create);
+router.post('/', authMiddleware, upload.single('imagem'), asyncHandler(projectController.create));
 
 /**
  * @swagger
@@ -125,7 +126,7 @@ router.post('/', authMiddleware, upload.single('imagem'), projectController.crea
  *       200:
  *         description: Lista de projetos
  */
-router.get('/', authMiddleware, projectController.list);
+router.get('/', authMiddleware, asyncHandler(projectController.list));
 
 /**
  * @swagger
@@ -147,7 +148,7 @@ router.get('/', authMiddleware, projectController.list);
  *       404:
  *         description: Projeto não encontrado
  */
-router.get('/:id', authMiddleware, projectController.get);
+router.get('/:id', authMiddleware, asyncHandler(projectController.get));
 
 /**
  * @swagger
@@ -254,7 +255,7 @@ router.get('/:id', authMiddleware, projectController.get);
  *       404:
  *         description: Projeto não encontrado
  */
-router.put('/:id', authMiddleware, projectController.update);
+router.put('/:id', authMiddleware, asyncHandler(projectController.update));
 
 /**
  * @swagger
@@ -276,7 +277,7 @@ router.put('/:id', authMiddleware, projectController.update);
  *       404:
  *         description: Projeto não encontrado
  */
-router.delete('/:id', authMiddleware, projectController.remove);
+router.delete('/:id', authMiddleware, asyncHandler(projectController.remove));
 
 /**
  * @swagger
@@ -306,6 +307,6 @@ router.delete('/:id', authMiddleware, projectController.remove);
  *       200:
  *         description: URL da imagem enviada
  */
-router.post('/:id/imagem', authMiddleware, upload.single('imagem'), projectController.uploadImage);
+router.post('/:id/imagem', authMiddleware, upload.single('imagem'), asyncHandler(projectController.uploadImage));
 
 module.exports = router;

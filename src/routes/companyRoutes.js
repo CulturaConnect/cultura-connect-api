@@ -1,6 +1,7 @@
 const express = require('express');
 const companyController = require('../controllers/companyController');
 const authMiddleware = require('../middlewares/authMiddleware');
+const asyncHandler = require('../utils/asyncHandler');
 
 const router = express.Router();
 
@@ -22,7 +23,7 @@ const router = express.Router();
  *       200:
  *         description: Lista de usuários
  */
-router.get('/:id/users', authMiddleware, companyController.listUsers);
+router.get('/:id/users', authMiddleware, asyncHandler(companyController.listUsers));
 
 /**
  * @swagger
@@ -55,6 +56,6 @@ router.get('/:id/users', authMiddleware, companyController.listUsers);
  *       404:
  *         description: Usuário não encontrado
  */
-router.post('/:id/users', authMiddleware, companyController.addUser);
+router.post('/:id/users', authMiddleware, asyncHandler(companyController.addUser));
 
 module.exports = router;

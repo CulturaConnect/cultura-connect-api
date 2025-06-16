@@ -1,6 +1,7 @@
 const express = require('express');
 const userController = require('../controllers/userController');
 const authMiddleware = require('../middlewares/authMiddleware');
+const asyncHandler = require('../utils/asyncHandler');
 
 const router = express.Router();
 
@@ -24,6 +25,6 @@ const router = express.Router();
  *       404:
  *         description: Usuário não encontrado
  */
-router.get('/search', authMiddleware, userController.searchByCpf);
+router.get('/search', authMiddleware, asyncHandler(userController.searchByCpf));
 
 module.exports = router;
