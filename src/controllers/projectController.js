@@ -1,6 +1,8 @@
 const { v4: uuidv4 } = require('uuid');
 const projectService = require('../services/projectService');
 const companyUserService = require('../services/companyUserService');
+const AppError = require('../errors/AppError');
+const logger = require('../utils/logger');
 
 async function create(req, res) {
   const data = req.body;
@@ -11,7 +13,7 @@ async function create(req, res) {
     }
   });
   if (!data.nome) {
-    return res.status(400).json({ message: 'Nome do projeto é obrigatório' });
+    throw new AppError('Nome do projeto é obrigatório', 400);
   }
   if (!data.modelo) {
     data.modelo = {
@@ -33,7 +35,7 @@ async function create(req, res) {
       data.responsavel_principal_id,
     );
     if (!allowed) {
-      return res.status(400).json({ message: 'Usuário não associado à empresa' });
+      throw new AppError('Usuário não associado à empresa', 400);
     }
   }
   if (data.responsavel_legal_id) {
@@ -42,7 +44,7 @@ async function create(req, res) {
       data.responsavel_legal_id,
     );
     if (!allowed) {
-      return res.status(400).json({ message: 'Usuário não associado à empresa' });
+      throw new AppError('Usuário não associado à empresa', 400);
     }
   }
   data.id = uuidv4();
@@ -56,11 +58,12 @@ async function create(req, res) {
       );
       data.imagem_url = url;
     } catch (e) {
-      console.error('Erro ao enviar imagem', e);
-      return res.status(500).json({ message: 'Erro ao salvar imagem' });
+      logger.error('Erro ao enviar imagem', e);
+      throw new AppError('Erro ao salvar imagem', 500);
     }
   }
   const project = await projectService.createProject(data);
+  logger.info('Project created', project.id);
   res.status(201).json(project);
 }
 
@@ -71,7 +74,7 @@ async function list(req, res) {
 
 async function get(req, res) {
   const project = await projectService.getProjectById(req.params.id);
-  if (!project) return res.status(404).json({ message: 'Projeto não encontrado' });
+  if (!project) throw new AppError('Projeto não encontrado', 404);
   res.json(project);
 }
 
@@ -86,7 +89,7 @@ async function update(req, res) {
       data.responsavel_principal_id,
     );
     if (!allowed) {
-      return res.status(400).json({ message: 'Usuário não associado à empresa' });
+      throw new AppError('Usuário não associado à empresa', 400);
     }
   }
   if (data.responsavel_legal_id) {
@@ -95,27 +98,29 @@ async function update(req, res) {
       data.responsavel_legal_id,
     );
     if (!allowed) {
-      return res.status(400).json({ message: 'Usuário não associado à empresa' });
+      throw new AppError('Usuário não associado à empresa', 400);
     }
   }
   const project = await projectService.updateProject(req.params.id, data);
-  if (!project) return res.status(404).json({ message: 'Projeto não encontrado' });
+  if (!project) throw new AppError('Projeto não encontrado', 404);
+  logger.info('Project updated', req.params.id);
   res.json(project);
 }
 
 async function remove(req, res) {
   const deleted = await projectService.deleteProject(req.params.id);
-  if (!deleted) return res.status(404).json({ message: 'Projeto não encontrado' });
+  if (!deleted) throw new AppError('Projeto não encontrado', 404);
+  logger.info('Project removed', req.params.id);
   res.status(204).send();
 }
 
 async function uploadImage(req, res) {
   const { id } = req.params;
   if (!req.file) {
-    return res.status(400).json({ message: 'Nenhum arquivo enviado' });
+    throw new AppError('Nenhum arquivo enviado', 400);
   }
   const project = await projectService.getProjectById(id);
-  if (!project) return res.status(404).json({ message: 'Projeto não encontrado' });
+  if (!project) throw new AppError('Projeto não encontrado', 404);
   try {
     const key = `projects/${id}/${Date.now()}_${req.file.originalname}`;
     const url = await require('../services/s3Service').uploadFile(
@@ -126,8 +131,8 @@ async function uploadImage(req, res) {
     await projectService.updateProject(id, { imagem_url: url });
     res.json({ imagem_url: url });
   } catch (e) {
-    console.error('Erro ao enviar imagem', e);
-    res.status(500).json({ message: 'Erro ao salvar imagem' });
+    logger.error('Erro ao enviar imagem', e);
+    throw new AppError('Erro ao salvar imagem', 500);
   }
 }
 

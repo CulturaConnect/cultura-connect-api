@@ -4,6 +4,8 @@ const { v4: uuidv4 } = require('uuid');
 const userService = require('../services/userService');
 const companyService = require('../services/companyUserService');
 const { sendEmail } = require('../services/emailService');
+const AppError = require('../errors/AppError');
+const logger = require('../utils/logger');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'replace_this_secret';
 const TOKEN_EXPIRY = process.env.TOKEN_EXPIRY || '7d';
@@ -11,11 +13,11 @@ const TOKEN_EXPIRY = process.env.TOKEN_EXPIRY || '7d';
 async function registerPerson(req, res) {
   const { nomeCompleto, cpf, email, telefone, senha } = req.body;
   if (!nomeCompleto || !cpf || !email || !telefone || !senha) {
-    return res.status(400).json({ message: 'Dados incompletos' });
+    throw new AppError('Dados incompletos', 400);
   }
   const existing = await userService.findUserByEmail(email);
   if (existing) {
-    return res.status(400).json({ message: 'Email já registrado' });
+    throw new AppError('Email já registrado', 400);
   }
   const hashed = await bcrypt.hash(senha, 10);
   const user = {
@@ -28,6 +30,7 @@ async function registerPerson(req, res) {
     senha: hashed,
   };
   await userService.createPerson(user);
+  logger.info('User registered', user.id);
   res.status(201).json({ message: 'Registrado com sucesso' });
 }
 
@@ -53,11 +56,11 @@ async function registerCompany(req, res) {
     !inscricaoMunicipal ||
     !telefone
   ) {
-    return res.status(400).json({ message: 'Dados incompletos' });
+    throw new AppError('Dados incompletos', 400);
   }
   const existing = await userService.findUserByEmail(email);
   if (existing) {
-    return res.status(400).json({ message: 'Email já registrado' });
+    throw new AppError('Email já registrado', 400);
   }
   const hashed = await bcrypt.hash(senha, 10);
   const user = {
@@ -76,22 +79,25 @@ async function registerCompany(req, res) {
   if (Array.isArray(usuariosCpfs)) {
     for (const cpf of usuariosCpfs) {
       const u = await userService.findUserByCpf(cpf);
-      if (!u) return res.status(404).json({ message: 'Usuário não encontrado', cpf });
+      if (!u) throw new AppError('Usuário não encontrado', 404);
       await companyService.addUserToCompany(user.id, u.id);
     }
   }
+  logger.info('Company registered', user.id);
   res.status(201).json({ message: 'Registrado com sucesso', id: user.id });
 }
 
 async function login(req, res) {
   const { email, senha } = req.body;
   const user = await userService.findUserByEmail(email);
-  if (!user) return res.status(401).json({ message: 'Credenciais inválidas' });
+  if (!user) throw new AppError('Credenciais inválidas', 401);
   const match = await bcrypt.compare(senha, user.senha);
-  if (!match) return res.status(401).json({ message: 'Credenciais inválidas' });
+  if (!match) throw new AppError('Credenciais inválidas', 401);
   const token = jwt.sign({ id: user.id, type: user.type }, JWT_SECRET, {
     expiresIn: TOKEN_EXPIRY,
   });
+
+  logger.info('User login', user.id);
 
   res.json({
     token,
@@ -113,14 +119,14 @@ async function login(req, res) {
 
 async function profile(req, res) {
   const user = await userService.findUserById(req.user.id);
-  if (!user) return res.status(404).json({ message: 'Usuário não encontrado' });
+  if (!user) throw new AppError('Usuário não encontrado', 404);
   const { senha, ...safe } = user.toJSON();
   res.json({ user: safe });
 }
 
 async function updateProfile(req, res) {
   const user = await userService.findUserById(req.user.id);
-  if (!user) return res.status(404).json({ message: 'Usuário não encontrado' });
+  if (!user) throw new AppError('Usuário não encontrado', 404);
 
   const updates = {};
   if (user.type === 'person') {
@@ -132,10 +138,10 @@ async function updateProfile(req, res) {
 
   if (req.body.novaSenha) {
     if (!req.body.senhaAtual)
-      return res.status(400).json({ message: 'Senha atual obrigatória' });
+      throw new AppError('Senha atual obrigatória', 400);
     const match = await bcrypt.compare(req.body.senhaAtual, user.senha);
     if (!match)
-      return res.status(400).json({ message: 'Senha atual incorreta' });
+      throw new AppError('Senha atual incorreta', 400);
     updates.senha = await bcrypt.hash(req.body.novaSenha, 10);
   }
 
@@ -149,8 +155,8 @@ async function updateProfile(req, res) {
       );
       updates.imagem_url = url;
     } catch (e) {
-      console.error('Erro ao enviar imagem', e);
-      return res.status(500).json({ message: 'Erro ao salvar imagem' });
+      logger.error('Erro ao enviar imagem', e);
+      throw new AppError('Erro ao salvar imagem', 500);
     }
   }
 
@@ -163,7 +169,7 @@ async function updateProfile(req, res) {
 async function recoverPassword(req, res) {
   const { email } = req.body;
   const user = await userService.findUserByEmail(email);
-  if (!user) return res.status(404).json({ message: 'Usuário não encontrado' });
+  if (!user) throw new AppError('Usuário não encontrado', 404);
   const existing = await userService.getResetCode(email);
   const now = new Date();
   let code;
@@ -177,7 +183,7 @@ async function recoverPassword(req, res) {
   try {
     await sendEmail(email, 'Recuperação de Senha', `Seu código: ${code}`);
   } catch (e) {
-    console.error('Erro ao enviar email', e);
+    logger.error('Erro ao enviar email', e);
   }
   res.json({ message: 'Código enviado' });
 }
@@ -186,10 +192,10 @@ async function resetPassword(req, res) {
   const { email, code, novaSenha } = req.body;
   const saved = await userService.getResetCode(email);
   if (!saved || saved.code !== code || saved.expires_at < new Date()) {
-    return res.status(400).json({ message: 'Código inválido' });
+    throw new AppError('Código inválido', 400);
   }
   const user = await userService.findUserByEmail(email);
-  if (!user) return res.status(404).json({ message: 'Usuário não encontrado' });
+  if (!user) throw new AppError('Usuário não encontrado', 404);
   const hashed = await bcrypt.hash(novaSenha, 10);
   await userService.updatePassword(email, hashed);
   await userService.deleteResetCode(email);

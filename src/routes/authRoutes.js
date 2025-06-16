@@ -2,6 +2,7 @@ const express = require('express');
 const authController = require('../controllers/authController');
 const authMiddleware = require('../middlewares/authMiddleware');
 const multer = require('multer');
+const asyncHandler = require('../utils/asyncHandler');
 
 const upload = multer({ storage: multer.memoryStorage() });
 
@@ -42,7 +43,7 @@ const router = express.Router();
  *       400:
  *         description: Dados incompletos
  */
-router.post('/register/person', authController.registerPerson);
+router.post('/register/person', asyncHandler(authController.registerPerson));
 
 /**
  * @swagger
@@ -92,7 +93,7 @@ router.post('/register/person', authController.registerPerson);
  *       400:
  *         description: Dados incompletos
  */
-router.post('/register/company', authController.registerCompany);
+router.post('/register/company', asyncHandler(authController.registerCompany));
 
 /**
  * @swagger
@@ -120,7 +121,7 @@ router.post('/register/company', authController.registerCompany);
  *       401:
  *         description: Credenciais inválidas
  */
-router.post('/login', authController.login);
+router.post('/login', asyncHandler(authController.login));
 
 /**
  * @swagger
@@ -138,7 +139,7 @@ router.post('/login', authController.login);
  *       404:
  *         description: Usuário não encontrado
  */
-router.get('/profile', authMiddleware, authController.profile);
+router.get('/profile', authMiddleware, asyncHandler(authController.profile));
 
 /**
  * @swagger
@@ -178,7 +179,7 @@ router.put(
   '/profile',
   authMiddleware,
   upload.single('imagem'),
-  authController.updateProfile,
+  asyncHandler(authController.updateProfile),
 );
 
 /**
@@ -204,7 +205,7 @@ router.put(
  *       404:
  *         description: Usuário não encontrado
  */
-router.post('/recover', authController.recoverPassword);
+router.post('/recover', asyncHandler(authController.recoverPassword));
 
 /**
  * @swagger
@@ -237,6 +238,6 @@ router.post('/recover', authController.recoverPassword);
  *       404:
  *         description: Usuário não encontrado
  */
-router.post('/reset', authController.resetPassword);
+router.post('/reset', asyncHandler(authController.resetPassword));
 
 module.exports = router;
