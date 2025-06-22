@@ -29,6 +29,12 @@ async function create(req, res) {
   if (!data.areas_execucao) data.areas_execucao = [];
   if (!data.cronograma_atividades) data.cronograma_atividades = [];
   if (!data.equipe) data.equipe = [];
+  if (!data.orcamento_previsto && req.body.orcamentoPrevisto) {
+    data.orcamento_previsto = parseFloat(req.body.orcamentoPrevisto);
+  }
+  if (!data.orcamento_gasto && req.body.orcamentoGasto) {
+    data.orcamento_gasto = parseFloat(req.body.orcamentoGasto);
+  }
   if (data.responsavel_principal_id) {
     const allowed = await companyUserService.userBelongsToCompany(
       req.user.id,
@@ -48,6 +54,8 @@ async function create(req, res) {
     }
   }
   data.id = uuidv4();
+  data.company_id = req.user.id;
+  data.status = 'novo';
   if (req.file) {
     try {
       const key = `projects/${data.id}/${Date.now()}_${req.file.originalname}`;
@@ -83,6 +91,12 @@ async function update(req, res) {
   if (data.areas_execucao === undefined) data.areas_execucao = [];
   if (data.cronograma_atividades === undefined) data.cronograma_atividades = [];
   if (data.equipe === undefined) data.equipe = [];
+  if (req.body.orcamentoPrevisto) {
+    data.orcamento_previsto = parseFloat(req.body.orcamentoPrevisto);
+  }
+  if (req.body.orcamentoGasto) {
+    data.orcamento_gasto = parseFloat(req.body.orcamentoGasto);
+  }
   if (data.responsavel_principal_id) {
     const allowed = await companyUserService.userBelongsToCompany(
       req.user.id,
@@ -136,4 +150,15 @@ async function uploadImage(req, res) {
   }
 }
 
-module.exports = { create, list, get, update, remove, uploadImage };
+async function updateStatus(req, res) {
+  const { id } = req.params;
+  const { status } = req.body;
+  const allowed = ['novo', 'andamento', 'pendente', 'atrasado', 'concluido'];
+  if (!allowed.includes(status)) throw new AppError('Status inválido', 400);
+  const project = await projectService.updateProjectStatus(id, status);
+  if (!project) throw new AppError('Projeto não encontrado', 404);
+  await require('../services/notificationService').notifyProjectStatusChange(project);
+  res.json(project);
+}
+
+module.exports = { create, list, get, update, remove, uploadImage, updateStatus };
