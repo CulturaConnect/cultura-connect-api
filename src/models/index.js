@@ -70,6 +70,23 @@ const Project = sequelize.define('Project', {
   responsavel_principal_id: DataTypes.UUID,
   equipe: DataTypes.JSONB,
   responsavel_legal_id: DataTypes.UUID,
+  company_id: DataTypes.UUID,
+  status: {
+    type: DataTypes.ENUM(
+      'novo',
+      'andamento',
+      'pendente',
+      'atrasado',
+      'concluido',
+    ),
+    defaultValue: 'novo',
+  },
+  orcamento_previsto: DataTypes.FLOAT,
+  orcamento_gasto: DataTypes.FLOAT,
+  created_at: {
+    type: DataTypes.DATE,
+    defaultValue: Sequelize.NOW,
+  },
 }, {
   tableName: 'projects',
   timestamps: false,

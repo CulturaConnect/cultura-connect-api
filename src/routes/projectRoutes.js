@@ -259,6 +259,38 @@ router.put('/:id', authMiddleware, asyncHandler(projectController.update));
 
 /**
  * @swagger
+ * /projects/{id}/status:
+ *   patch:
+ *     summary: Atualiza o status de um projeto
+ *     tags: [Projects]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - status
+ *             properties:
+ *               status:
+ *                 type: string
+ *                 enum: [novo, andamento, pendente, atrasado, concluido]
+ *     responses:
+ *       200:
+ *         description: Status atualizado
+ */
+router.patch('/:id/status', authMiddleware, asyncHandler(projectController.updateStatus));
+
+/**
+ * @swagger
  * /projects/{id}:
  *   delete:
  *     summary: Remove um projeto

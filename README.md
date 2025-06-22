@@ -2,6 +2,13 @@
 
 API em Node.js utilizando Express para autenticação de usuários.
 
+## Novidades
+
+- Implementado controle de status para projetos (`novo`, `andamento`, `pendente`, `atrasado`, `concluido`).
+- Projetos agora possuem campos de orçamento previsto e gasto.
+- Projetos com status `novo` são removidos automaticamente após 30 dias.
+- Notificações por e-mail são enviadas aos membros da organização quando o status muda ou quando um projeto está perto de iniciar ou finalizar.
+
 ## Configuração
 
 Crie um arquivo `.env` ou defina as seguintes variáveis de ambiente:
@@ -33,6 +40,7 @@ definidas em `src/models`. Certifique-se de que o banco configurado está ativo
 para que tabelas como `company_users` e `projects` sejam criadas corretamente.
 
 A API utilizará o banco PostgreSQL configurado e enviará e-mails via o serviço definido.
+Esta versão utiliza a biblioteca [better-auth](https://www.better-auth.com) para gerenciamento simplificado de autenticação e organizações.
 
 ## Documentação Swagger
 
