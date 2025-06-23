@@ -1,6 +1,24 @@
+const { v4: uuidv4 } = require('uuid');
 const { sendEmail } = require('./emailService');
 const companyUserService = require('./companyUserService');
 const projectService = require('./projectService');
+const { Notification } = require('../models');
+
+async function addNotification(userId, message) {
+  return Notification.create({
+    id: uuidv4(),
+    user_id: userId,
+    message,
+    created_at: new Date(),
+  });
+}
+
+async function getNotificationsForUser(userId) {
+  return Notification.findAll({
+    where: { user_id: userId },
+    order: [['created_at', 'DESC']],
+  });
+}
 
 async function notifyProjectStatusChange(project) {
   if (!project.company_id) return;
@@ -10,6 +28,10 @@ async function notifyProjectStatusChange(project) {
       await sendEmail(
         user.email,
         'Status do Projeto Atualizado',
+        `O projeto ${project.nome} teve o status alterado para ${project.status}.`,
+      );
+      await addNotification(
+        user.id,
         `O projeto ${project.nome} teve o status alterado para ${project.status}.`,
       );
     } catch (_) {}
@@ -27,6 +49,7 @@ async function notifyUpcomingProjects() {
         for (const u of users) {
           try {
             await sendEmail(u.email, 'Projeto prestes a iniciar', `O projeto ${p.nome} inicia em breve.`);
+            await addNotification(u.id, `O projeto ${p.nome} inicia em breve.`);
           } catch (_) {}
         }
       }
@@ -35,6 +58,7 @@ async function notifyUpcomingProjects() {
         for (const u of users) {
           try {
             await sendEmail(u.email, 'Projeto prestes a finalizar', `O projeto ${p.nome} termina em breve.`);
+            await addNotification(u.id, `O projeto ${p.nome} termina em breve.`);
           } catch (_) {}
         }
       }
@@ -52,6 +76,7 @@ async function removeOldProjects() {
       for (const u of users) {
         try {
           await sendEmail(u.email, 'Projeto removido', `O projeto ${p.nome} foi removido por inatividade.`);
+          await addNotification(u.id, `O projeto ${p.nome} foi removido por inatividade.`);
         } catch (_) {}
       }
     }
@@ -62,4 +87,6 @@ module.exports = {
   notifyProjectStatusChange,
   notifyUpcomingProjects,
   removeOldProjects,
+  addNotification,
+  getNotificationsForUser,
 };
