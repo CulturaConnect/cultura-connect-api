@@ -6,10 +6,17 @@ const logger = require('../utils/logger');
 
 async function create(req, res) {
   const data = req.body;
-  const jsonFields = ['modelo', 'areas_execucao', 'cronograma_atividades', 'equipe'];
-  jsonFields.forEach(f => {
+  const jsonFields = [
+    'modelo',
+    'areas_execucao',
+    'cronograma_atividades',
+    'equipe',
+  ];
+  jsonFields.forEach((f) => {
     if (typeof data[f] === 'string') {
-      try { data[f] = JSON.parse(data[f]); } catch (_) {}
+      try {
+        data[f] = JSON.parse(data[f]);
+      } catch (_) {}
     }
   });
   if (!data.nome) {
@@ -94,10 +101,14 @@ async function get(req, res) {
 async function update(req, res) {
   const data = req.body;
   let originalStatus;
-  const allowedStatuses = ['novo', 'andamento', 'pendente', 'atrasado', 'concluido'];
-  if (data.areas_execucao === undefined) data.areas_execucao = [];
+  const allowedStatuses = [
+    'novo',
+    'andamento',
+    'pendente',
+    'atrasado',
+    'concluido',
+  ];
   if (data.cronograma_atividades === undefined) data.cronograma_atividades = [];
-  if (data.equipe === undefined) data.equipe = [];
   if (req.body.orcamentoPrevisto) {
     data.orcamento_previsto = parseFloat(req.body.orcamentoPrevisto);
   }
@@ -110,33 +121,35 @@ async function update(req, res) {
   let project = await projectService.getProjectById(req.params.id);
   if (!project) throw new AppError('Projeto não encontrado', 404);
   originalStatus = project.status;
-  if (req.user.type === 'company') {
-    if (data.responsavel_principal_id) {
-      const allowed = await companyUserService.userBelongsToCompany(
-        req.user.id,
-        data.responsavel_principal_id,
-      );
-      if (!allowed) {
-        throw new AppError('Usuário não associado à empresa', 400);
-      }
-    }
-    if (data.responsavel_legal_id) {
-      const allowed = await companyUserService.userBelongsToCompany(
-        req.user.id,
-        data.responsavel_legal_id,
-      );
-      if (!allowed) {
-        throw new AppError('Usuário não associado à empresa', 400);
-      }
-    }
-  } else {
-    data.responsavel_principal_id = req.user.id;
-    data.responsavel_legal_id = req.user.id;
-  }
+  // if (req.user.type === 'company') {
+  //   if (data.responsavel_principal_id) {
+  //     const allowed = await companyUserService.userBelongsToCompany(
+  //       req.user.id,
+  //       data.responsavel_principal_id,
+  //     );
+  //     if (!allowed) {
+  //       throw new AppError('Usuário não associado à empresa', 400);
+  //     }
+  //   }
+  //   if (data.responsavel_legal_id) {
+  //     const allowed = await companyUserService.userBelongsToCompany(
+  //       req.user.id,
+  //       data.responsavel_legal_id,
+  //     );
+  //     if (!allowed) {
+  //       throw new AppError('Usuário não associado à empresa', 400);
+  //     }
+  //   }
+  // } else {
+  //   data.responsavel_principal_id = req.user.id;
+  //   data.responsavel_legal_id = req.user.id;
+  // }
   project = await projectService.updateProject(req.params.id, data);
   if (!project) throw new AppError('Projeto não encontrado', 404);
   if (data.status && data.status !== originalStatus) {
-    await require('../services/notificationService').notifyProjectStatusChange(project);
+    await require('../services/notificationService').notifyProjectStatusChange(
+      project,
+    );
   }
   logger.info('Project updated', req.params.id);
   res.json(project);
