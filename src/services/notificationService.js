@@ -23,7 +23,11 @@ async function getNotificationsForUser(userId) {
 
 async function getUsersForProject(project) {
   if (project.company_id) {
-    return companyUserService.getUsersForCompany(project.company_id);
+    const owner = await userService.findUserById(project.company_id);
+    if (owner && owner.type === 'company') {
+      return companyUserService.getUsersForCompany(project.company_id);
+    }
+    if (owner) return [owner];
   }
   const ids = [project.responsavel_principal_id, project.responsavel_legal_id]
     .filter(Boolean)
