@@ -240,4 +240,31 @@ router.post('/recover', asyncHandler(authController.recoverPassword));
  */
 router.post('/reset', asyncHandler(authController.resetPassword));
 
+/**
+ * @swagger
+ * /auth/check-code:
+ *   post:
+ *     summary: Confirma o código de redefinição de senha
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - code
+ *             properties:
+ *               code:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Código válido
+ *       400:
+ *         description: Código inválido
+ *       404:
+ *         description: Usuário não encontrado
+ */
+router.post('/check-code', asyncHandler(authController.checkResetCode));
+
 module.exports = router;

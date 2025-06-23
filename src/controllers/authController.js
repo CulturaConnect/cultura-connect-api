@@ -140,8 +140,7 @@ async function updateProfile(req, res) {
     if (!req.body.senhaAtual)
       throw new AppError('Senha atual obrigatória', 400);
     const match = await bcrypt.compare(req.body.senhaAtual, user.senha);
-    if (!match)
-      throw new AppError('Senha atual incorreta', 400);
+    if (!match) throw new AppError('Senha atual incorreta', 400);
     updates.senha = await bcrypt.hash(req.body.novaSenha, 10);
   }
 
@@ -202,6 +201,15 @@ async function resetPassword(req, res) {
   res.json({ message: 'Senha redefinida com sucesso' });
 }
 
+async function checkResetCode(req, res) {
+  const { email, code } = req.body;
+  const saved = await userService.getResetCode(email);
+  if (!saved || saved.code !== code || saved.expires_at < new Date()) {
+    throw new AppError('Código inválido', 400);
+  }
+  res.json({ valid: true });
+}
+
 module.exports = {
   registerPerson,
   registerCompany,
@@ -210,4 +218,5 @@ module.exports = {
   updateProfile,
   recoverPassword,
   resetPassword,
+  checkResetCode,
 };
