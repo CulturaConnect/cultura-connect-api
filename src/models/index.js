@@ -106,4 +106,27 @@ const CompanyUser = sequelize.define('CompanyUser', {
   timestamps: false,
 });
 
-module.exports = { sequelize, User, ResetCode, Project, CompanyUser };
+const Notification = sequelize.define('Notification', {
+  id: {
+    type: DataTypes.UUID,
+    primaryKey: true,
+    allowNull: false,
+  },
+  user_id: {
+    type: DataTypes.UUID,
+    allowNull: false,
+  },
+  message: {
+    type: DataTypes.TEXT,
+    allowNull: false,
+  },
+  created_at: {
+    type: DataTypes.DATE,
+    defaultValue: Sequelize.NOW,
+  },
+}, {
+  tableName: 'notifications',
+  timestamps: false,
+});
+
+module.exports = { sequelize, User, ResetCode, Project, CompanyUser, Notification };
