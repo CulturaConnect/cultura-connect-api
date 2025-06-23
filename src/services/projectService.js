@@ -17,10 +17,6 @@ async function updateProject(id, data) {
   return getProjectById(id);
 }
 
-async function updateProjectStatus(id, status) {
-  await Project.update({ status }, { where: { id } });
-  return getProjectById(id);
-}
 
 async function getOldNewProjects(cutoff) {
   return Project.findAll({ where: { status: 'novo', created_at: { [require('sequelize').Op.lt]: cutoff } } });
@@ -36,6 +32,5 @@ module.exports = {
   getProjectById,
   updateProject,
   deleteProject,
-  updateProjectStatus,
   getOldNewProjects,
 };

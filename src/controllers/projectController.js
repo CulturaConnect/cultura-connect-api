@@ -93,6 +93,8 @@ async function get(req, res) {
 
 async function update(req, res) {
   const data = req.body;
+  let originalStatus;
+  const allowedStatuses = ['novo', 'andamento', 'pendente', 'atrasado', 'concluido'];
   if (data.areas_execucao === undefined) data.areas_execucao = [];
   if (data.cronograma_atividades === undefined) data.cronograma_atividades = [];
   if (data.equipe === undefined) data.equipe = [];
@@ -102,6 +104,12 @@ async function update(req, res) {
   if (req.body.orcamentoGasto) {
     data.orcamento_gasto = parseFloat(req.body.orcamentoGasto);
   }
+  if (data.status !== undefined && !allowedStatuses.includes(data.status)) {
+    throw new AppError('Status inválido', 400);
+  }
+  let project = await projectService.getProjectById(req.params.id);
+  if (!project) throw new AppError('Projeto não encontrado', 404);
+  originalStatus = project.status;
   if (req.user.type === 'company') {
     if (data.responsavel_principal_id) {
       const allowed = await companyUserService.userBelongsToCompany(
@@ -125,8 +133,11 @@ async function update(req, res) {
     data.responsavel_principal_id = req.user.id;
     data.responsavel_legal_id = req.user.id;
   }
-  const project = await projectService.updateProject(req.params.id, data);
+  project = await projectService.updateProject(req.params.id, data);
   if (!project) throw new AppError('Projeto não encontrado', 404);
+  if (data.status && data.status !== originalStatus) {
+    await require('../services/notificationService').notifyProjectStatusChange(project);
+  }
   logger.info('Project updated', req.params.id);
   res.json(project);
 }
@@ -160,15 +171,4 @@ async function uploadImage(req, res) {
   }
 }
 
-async function updateStatus(req, res) {
-  const { id } = req.params;
-  const { status } = req.body;
-  const allowed = ['novo', 'andamento', 'pendente', 'atrasado', 'concluido'];
-  if (!allowed.includes(status)) throw new AppError('Status inválido', 400);
-  const project = await projectService.updateProjectStatus(id, status);
-  if (!project) throw new AppError('Projeto não encontrado', 404);
-  await require('../services/notificationService').notifyProjectStatusChange(project);
-  res.json(project);
-}
-
-module.exports = { create, list, get, update, remove, uploadImage, updateStatus };
+module.exports = { create, list, get, update, remove, uploadImage };
