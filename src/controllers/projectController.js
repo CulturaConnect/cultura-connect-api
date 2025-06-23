@@ -35,26 +35,31 @@ async function create(req, res) {
   if (!data.orcamento_gasto && req.body.orcamentoGasto) {
     data.orcamento_gasto = parseFloat(req.body.orcamentoGasto);
   }
-  if (data.responsavel_principal_id) {
-    const allowed = await companyUserService.userBelongsToCompany(
-      req.user.id,
-      data.responsavel_principal_id,
-    );
-    if (!allowed) {
-      throw new AppError('Usuário não associado à empresa', 400);
+  if (req.user.type === 'company') {
+    if (data.responsavel_principal_id) {
+      const allowed = await companyUserService.userBelongsToCompany(
+        req.user.id,
+        data.responsavel_principal_id,
+      );
+      if (!allowed) {
+        throw new AppError('Usuário não associado à empresa', 400);
+      }
     }
-  }
-  if (data.responsavel_legal_id) {
-    const allowed = await companyUserService.userBelongsToCompany(
-      req.user.id,
-      data.responsavel_legal_id,
-    );
-    if (!allowed) {
-      throw new AppError('Usuário não associado à empresa', 400);
+    if (data.responsavel_legal_id) {
+      const allowed = await companyUserService.userBelongsToCompany(
+        req.user.id,
+        data.responsavel_legal_id,
+      );
+      if (!allowed) {
+        throw new AppError('Usuário não associado à empresa', 400);
+      }
     }
+    data.company_id = req.user.id;
+  } else {
+    data.responsavel_principal_id = req.user.id;
+    data.responsavel_legal_id = req.user.id;
   }
   data.id = uuidv4();
-  data.company_id = req.user.id;
   data.status = 'novo';
   if (req.file) {
     try {
@@ -97,23 +102,28 @@ async function update(req, res) {
   if (req.body.orcamentoGasto) {
     data.orcamento_gasto = parseFloat(req.body.orcamentoGasto);
   }
-  if (data.responsavel_principal_id) {
-    const allowed = await companyUserService.userBelongsToCompany(
-      req.user.id,
-      data.responsavel_principal_id,
-    );
-    if (!allowed) {
-      throw new AppError('Usuário não associado à empresa', 400);
+  if (req.user.type === 'company') {
+    if (data.responsavel_principal_id) {
+      const allowed = await companyUserService.userBelongsToCompany(
+        req.user.id,
+        data.responsavel_principal_id,
+      );
+      if (!allowed) {
+        throw new AppError('Usuário não associado à empresa', 400);
+      }
     }
-  }
-  if (data.responsavel_legal_id) {
-    const allowed = await companyUserService.userBelongsToCompany(
-      req.user.id,
-      data.responsavel_legal_id,
-    );
-    if (!allowed) {
-      throw new AppError('Usuário não associado à empresa', 400);
+    if (data.responsavel_legal_id) {
+      const allowed = await companyUserService.userBelongsToCompany(
+        req.user.id,
+        data.responsavel_legal_id,
+      );
+      if (!allowed) {
+        throw new AppError('Usuário não associado à empresa', 400);
+      }
     }
+  } else {
+    data.responsavel_principal_id = req.user.id;
+    data.responsavel_legal_id = req.user.id;
   }
   const project = await projectService.updateProject(req.params.id, data);
   if (!project) throw new AppError('Projeto não encontrado', 404);

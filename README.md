@@ -8,6 +8,7 @@ API em Node.js utilizando Express para autenticação de usuários.
 - Projetos agora possuem campos de orçamento previsto e gasto.
 - Projetos com status `novo` são removidos automaticamente após 30 dias.
 - Notificações por e-mail são enviadas aos membros da organização quando o status muda ou quando um projeto está perto de iniciar ou finalizar.
+- Pessoas físicas agora podem criar projetos e são definidas automaticamente como responsáveis principais e legais.
 
 ## Configuração
 
