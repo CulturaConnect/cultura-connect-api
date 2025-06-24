@@ -4,7 +4,6 @@ API REST construída com Node.js, Express e Sequelize para facilitar o gerenciam
 
 ## ✨ Recursos
 
-- Autenticação JWT via [better-auth](https://www.better-auth.com)
 - Cadastro de pessoas e empresas
 - Upload de imagens diretamente para o Amazon S3
 - Controle de status e orçamento de projetos
@@ -20,16 +19,16 @@ API REST construída com Node.js, Express e Sequelize para facilitar o gerenciam
 ### Variáveis de ambiente
 
 ```bash
-DATABASE_URL=postgres://user:pass@localhost:5432/cultura
-MAIL_USER=seu-email@gmail.com
-MAIL_PASS=senha-ou-token
-AWS_ACCESS_KEY_ID=sua-chave
-AWS_SECRET_ACCESS_KEY=seu-segredo
-AWS_REGION=us-east-1
-S3_BUCKET_NAME=nome-do-bucket
-JWT_SECRET=segredo-do-jwt
-TOKEN_EXPIRY=7d
-PORT=3000
+DATABASE_URL=
+MAIL_USER=
+MAIL_PASS=
+AWS_ACCESS_KEY_ID=
+AWS_SECRET_ACCESS_KEY=
+AWS_REGION=
+S3_BUCKET_NAME=
+JWT_SECRET=
+TOKEN_EXPIRY=
+PORT=
 ```
 
 ### Executando
