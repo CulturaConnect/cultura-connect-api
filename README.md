@@ -1,50 +1,81 @@
-# Cultura Connect API
+# Cultura Connect API 🎭
 
-API em Node.js utilizando Express para autenticação de usuários.
+API REST construída com Node.js, Express e Sequelize para facilitar o gerenciamento de projetos culturais.
 
-## Novidades
+## ✨ Recursos
 
-- Implementado controle de status para projetos (`novo`, `andamento`, `pendente`, `atrasado`, `concluido`).
-- Projetos agora possuem campos de orçamento previsto e gasto.
-- Projetos com status `novo` são removidos automaticamente após 30 dias.
-- Notificações por e-mail são enviadas aos membros da organização quando o status muda ou quando um projeto está perto de iniciar ou finalizar.
-- Pessoas físicas agora podem criar projetos e são definidas automaticamente como responsáveis principais e legais.
+- Autenticação JWT via [better-auth](https://www.better-auth.com)
+- Cadastro de pessoas e empresas
+- Upload de imagens diretamente para o Amazon S3
+- Controle de status e orçamento de projetos
+- Notificações por e-mail e na API
+- Documentação Swagger disponível em `/docs`
 
-## Configuração
+## 🚀 Primeiros passos
 
-Crie um arquivo `.env` ou defina as seguintes variáveis de ambiente:
+1. Clone este repositório
+2. Crie um arquivo `.env` seguindo o modelo abaixo
+3. Execute `npm install` para instalar as dependências
 
-- `DATABASE_URL` – string de conexão com o PostgreSQL.
-- `MAIL_USER` – conta de e-mail (ex. Gmail) utilizada para envio dos códigos de recuperação.
-- `MAIL_PASS` – senha ou token dessa conta.
-- `AWS_ACCESS_KEY_ID` – chave de acesso AWS para upload no S3.
-- `AWS_SECRET_ACCESS_KEY` – segredo da chave AWS.
-- `AWS_REGION` – região do bucket S3.
-- `S3_BUCKET_NAME` – nome do bucket utilizado para armazenar as imagens.
-
-Execute `npm install` para instalar as dependências. Para iniciar o servidor em 
-produção utilize:
+### Variáveis de ambiente
 
 ```bash
-npm start
+DATABASE_URL=postgres://user:pass@localhost:5432/cultura
+MAIL_USER=seu-email@gmail.com
+MAIL_PASS=senha-ou-token
+AWS_ACCESS_KEY_ID=sua-chave
+AWS_SECRET_ACCESS_KEY=seu-segredo
+AWS_REGION=us-east-1
+S3_BUCKET_NAME=nome-do-bucket
+JWT_SECRET=segredo-do-jwt
+TOKEN_EXPIRY=7d
+PORT=3000
 ```
 
-Durante o desenvolvimento é possível executar com recarregamento automático util
-izando:
+### Executando
 
 ```bash
+# Ambiente de produção
+npm start
+
+# Ambiente de desenvolvimento
 npm run dev
 ```
 
-Na primeira execução, o `sequelize.sync()` criará automaticamente as tabelas
-definidas em `src/models`. Certifique-se de que o banco configurado está ativo
-para que tabelas como `company_users` e `projects` sejam criadas corretamente.
+A primeira execução criará as tabelas no banco configurado. Certifique-se de que o PostgreSQL está em execução.
 
-A API utilizará o banco PostgreSQL configurado e enviará e-mails via o serviço definido.
-Esta versão utiliza a biblioteca [better-auth](https://www.better-auth.com) para gerenciamento simplificado de autenticação e organizações.
+## 📚 Endpoints resumidos
 
-## Documentação Swagger
+### Auth
+- `POST /auth/register/person` – cadastra pessoa física
+- `POST /auth/register/company` – cadastra empresa
+- `POST /auth/login` – autentica usuário
+- `GET /auth/profile` – retorna perfil
+- `PUT /auth/profile` – atualiza perfil
+- `POST /auth/recover` – envia código de recuperação
+- `POST /auth/reset` – redefine senha
+- `POST /auth/check-code` – valida código
 
-Após iniciar o servidor acesse `http://localhost:3000/docs` para visualizar a documentação interativa dos endpoints.
+### Projects
+- `POST /projects` – cria projeto (aceita `multipart/form-data` para imagem)
+- `GET /projects` – lista projetos
+- `GET /projects/{id}` – obtém projeto por ID
+- `PATCH /projects/{id}` – atualiza projeto
+- `DELETE /projects/{id}` – remove projeto
+- `POST /projects/{id}/imagem` – upload de imagem
 
-O upload de imagens de projetos pode ser realizado diretamente na criação enviando uma requisição `multipart/form-data` para `POST /projects` com o campo `imagem`. Também é possível enviar o arquivo posteriormente via `POST /projects/{id}/imagem`.
+### Companies
+- `GET /companies/{id}/users` – lista membros
+- `POST /companies/{id}/users` – associa usuário
+
+### Users
+- `GET /users/search?cpf=` – busca por CPF
+
+### Notifications
+- `GET /notifications/{userId}` – lista notificações do usuário
+
+Para detalhes completos acesse `http://localhost:3000/docs` após iniciar o servidor.
+
+---
+
+Aproveite para integrar sua equipe e impulsionar seus projetos culturais! 🚀
