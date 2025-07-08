@@ -1,132 +1,163 @@
 const { Sequelize, DataTypes } = require('sequelize');
 
-const sequelize = new Sequelize(process.env.DATABASE_URL || 'postgres://user:pass@localhost:5432/cultura', {
-  dialect: 'postgres',
-});
+const sequelize = new Sequelize(
+  process.env.DATABASE_URL || 'postgres://user:pass@localhost:5432/cultura',
+  {
+    dialect: 'postgres',
+  },
+);
 
-const User = sequelize.define('User', {
-  id: {
-    type: DataTypes.UUID,
-    primaryKey: true,
-    allowNull: false,
+const User = sequelize.define(
+  'User',
+  {
+    id: {
+      type: DataTypes.UUID,
+      primaryKey: true,
+      allowNull: false,
+    },
+    type: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    nome_completo: DataTypes.STRING,
+    cpf: DataTypes.STRING,
+    cnpj: DataTypes.STRING,
+    is_mei: DataTypes.BOOLEAN,
+    email: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      unique: true,
+    },
+    telefone: DataTypes.STRING,
+    senha: DataTypes.STRING,
+    imagem_url: DataTypes.STRING,
+    razao_social: DataTypes.STRING,
+    inscricao_estadual: DataTypes.STRING,
+    inscricao_municipal: DataTypes.STRING,
   },
-  type: {
-    type: DataTypes.STRING,
-    allowNull: false,
+  {
+    tableName: 'users',
+    timestamps: false,
   },
-  nome_completo: DataTypes.STRING,
-  cpf: DataTypes.STRING,
-  cnpj: DataTypes.STRING,
-  is_mei: DataTypes.BOOLEAN,
-  email: {
-    type: DataTypes.STRING,
-    allowNull: false,
-    unique: true,
-  },
-  telefone: DataTypes.STRING,
-  senha: DataTypes.STRING,
-  imagem_url: DataTypes.STRING,
-  razao_social: DataTypes.STRING,
-  inscricao_estadual: DataTypes.STRING,
-  inscricao_municipal: DataTypes.STRING,
-}, {
-  tableName: 'users',
-  timestamps: false,
-});
+);
 
-const ResetCode = sequelize.define('ResetCode', {
-  email: {
-    type: DataTypes.STRING,
-    primaryKey: true,
+const ResetCode = sequelize.define(
+  'ResetCode',
+  {
+    email: {
+      type: DataTypes.STRING,
+      primaryKey: true,
+    },
+    code: DataTypes.STRING,
+    expires_at: DataTypes.DATE,
   },
-  code: DataTypes.STRING,
-  expires_at: DataTypes.DATE,
-}, {
-  tableName: 'reset_codes',
-  timestamps: false,
-});
+  {
+    tableName: 'reset_codes',
+    timestamps: false,
+  },
+);
 
-const Project = sequelize.define('Project', {
-  id: {
-    type: DataTypes.UUID,
-    primaryKey: true,
-    allowNull: false,
+const Project = sequelize.define(
+  'Project',
+  {
+    id: {
+      type: DataTypes.UUID,
+      primaryKey: true,
+      allowNull: false,
+    },
+    nome: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    segmento: DataTypes.STRING,
+    inicio: DataTypes.DATE,
+    fim: DataTypes.DATE,
+    modelo: DataTypes.JSONB,
+    titulo_oficial: DataTypes.STRING,
+    imagem_url: DataTypes.STRING,
+    areas_execucao: DataTypes.JSONB,
+    resumo: DataTypes.TEXT,
+    objetivos_gerais: DataTypes.TEXT,
+    metas: DataTypes.TEXT,
+    is_public: DataTypes.BOOLEAN,
+    cronograma_atividades: DataTypes.JSONB,
+    responsavel_principal_id: DataTypes.UUID,
+    equipe: DataTypes.JSONB,
+    responsavel_legal_id: DataTypes.UUID,
+    company_id: DataTypes.UUID,
+    status: {
+      type: DataTypes.ENUM(
+        'novo',
+        'andamento',
+        'pendente',
+        'atrasado',
+        'concluido',
+      ),
+      defaultValue: 'novo',
+    },
+    orcamento_previsto: DataTypes.FLOAT,
+    orcamento_gasto: DataTypes.FLOAT,
+    created_at: {
+      type: DataTypes.DATE,
+      defaultValue: Sequelize.NOW,
+    },
   },
-  nome: {
-    type: DataTypes.STRING,
-    allowNull: false,
+  {
+    tableName: 'projects',
+    timestamps: false,
   },
-  segmento: DataTypes.STRING,
-  inicio: DataTypes.DATE,
-  fim: DataTypes.DATE,
-  modelo: DataTypes.JSONB,
-  titulo_oficial: DataTypes.STRING,
-  imagem_url: DataTypes.STRING,
-  areas_execucao: DataTypes.JSONB,
-  resumo: DataTypes.TEXT,
-  objetivos_gerais: DataTypes.TEXT,
-  metas: DataTypes.TEXT,
-  cronograma_atividades: DataTypes.JSONB,
-  responsavel_principal_id: DataTypes.UUID,
-  equipe: DataTypes.JSONB,
-  responsavel_legal_id: DataTypes.UUID,
-  company_id: DataTypes.UUID,
-  status: {
-    type: DataTypes.ENUM(
-      'novo',
-      'andamento',
-      'pendente',
-      'atrasado',
-      'concluido',
-    ),
-    defaultValue: 'novo',
-  },
-  orcamento_previsto: DataTypes.FLOAT,
-  orcamento_gasto: DataTypes.FLOAT,
-  created_at: {
-    type: DataTypes.DATE,
-    defaultValue: Sequelize.NOW,
-  },
-}, {
-  tableName: 'projects',
-  timestamps: false,
-});
+);
 
-const CompanyUser = sequelize.define('CompanyUser', {
-  company_id: {
-    type: DataTypes.UUID,
-    allowNull: false,
+const CompanyUser = sequelize.define(
+  'CompanyUser',
+  {
+    company_id: {
+      type: DataTypes.UUID,
+      allowNull: false,
+    },
+    user_id: {
+      type: DataTypes.UUID,
+      allowNull: false,
+    },
   },
-  user_id: {
-    type: DataTypes.UUID,
-    allowNull: false,
+  {
+    tableName: 'company_users',
+    timestamps: false,
   },
-}, {
-  tableName: 'company_users',
-  timestamps: false,
-});
+);
 
-const Notification = sequelize.define('Notification', {
-  id: {
-    type: DataTypes.UUID,
-    primaryKey: true,
-    allowNull: false,
+const Notification = sequelize.define(
+  'Notification',
+  {
+    id: {
+      type: DataTypes.UUID,
+      primaryKey: true,
+      allowNull: false,
+    },
+    user_id: {
+      type: DataTypes.UUID,
+      allowNull: false,
+    },
+    message: {
+      type: DataTypes.TEXT,
+      allowNull: false,
+    },
+    created_at: {
+      type: DataTypes.DATE,
+      defaultValue: Sequelize.NOW,
+    },
   },
-  user_id: {
-    type: DataTypes.UUID,
-    allowNull: false,
+  {
+    tableName: 'notifications',
+    timestamps: false,
   },
-  message: {
-    type: DataTypes.TEXT,
-    allowNull: false,
-  },
-  created_at: {
-    type: DataTypes.DATE,
-    defaultValue: Sequelize.NOW,
-  },
-}, {
-  tableName: 'notifications',
-  timestamps: false,
-});
+);
 
-module.exports = { sequelize, User, ResetCode, Project, CompanyUser, Notification };
+module.exports = {
+  sequelize,
+  User,
+  ResetCode,
+  Project,
+  CompanyUser,
+  Notification,
+};
