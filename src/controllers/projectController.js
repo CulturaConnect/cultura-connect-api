@@ -88,13 +88,15 @@ async function create(req, res) {
 }
 
 async function list(req, res) {
-  const projects = await projectService.getProjects();
+  const projects = await projectService.getProjectsForUser(req.user);
   res.json(projects);
 }
 
 async function get(req, res) {
   const project = await projectService.getProjectById(req.params.id);
   if (!project) throw new AppError('Projeto não encontrado', 404);
+  const allowed = await projectService.userCanViewProject(project, req.user);
+  if (!allowed) throw new AppError('Projeto não encontrado', 404);
   res.json(project);
 }
 
