@@ -3,6 +3,7 @@ const projectService = require('../services/projectService');
 const companyUserService = require('../services/companyUserService');
 const AppError = require('../errors/AppError');
 const logger = require('../utils/logger');
+const path = require('path');
 
 async function create(req, res) {
   const data = req.body;
@@ -70,7 +71,17 @@ async function create(req, res) {
   data.status = 'novo';
   if (req.file) {
     try {
-      const key = `projects/${data.id}/${Date.now()}_${req.file.originalname}`;
+      const ext = path.extname(req.file.originalname);
+
+      const baseName = path
+        .basename(req.file.originalname, ext)
+        .toLowerCase()
+        .replace(/\s+/g, '-')
+        .replace(/[^a-z0-9\-]/g, '');
+
+      const fileName = `${Date.now()}_${baseName}${ext}`;
+      const key = `projects/${data.id}/${fileName}`;
+
       const url = await require('../services/s3Service').uploadFile(
         req.file.buffer,
         key,

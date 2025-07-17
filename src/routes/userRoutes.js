@@ -25,6 +25,6 @@ const router = express.Router();
  *       404:
  *         description: Usuário não encontrado
  */
-router.get('/search', authMiddleware, asyncHandler(userController.searchByCpf));
+router.get('/search', asyncHandler(userController.searchByCpf));
 
 module.exports = router;

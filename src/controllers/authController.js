@@ -6,6 +6,7 @@ const companyService = require('../services/companyUserService');
 const { sendEmail } = require('../services/emailService');
 const AppError = require('../errors/AppError');
 const logger = require('../utils/logger');
+const path = require('path');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'replace_this_secret';
 const TOKEN_EXPIRY = process.env.TOKEN_EXPIRY || '7d';
@@ -146,12 +147,22 @@ async function updateProfile(req, res) {
 
   if (req.file) {
     try {
-      const key = `users/${user.id}/${Date.now()}_${req.file.originalname}`;
+      const ext = path.extname(req.file.originalname);
+      const baseName = path
+        .basename(req.file.originalname, ext)
+        .toLowerCase()
+        .replace(/\s+/g, '-') // espaços → hífen
+        .replace(/[^a-z0-9\-]/g, ''); // remove caracteres estranhos (acentos, etc.)
+
+      const fileName = `${Date.now()}_${baseName}${ext}`;
+      const key = `users/${user.id}/${fileName}`;
+
       const url = await require('../services/s3Service').uploadFile(
         req.file.buffer,
         key,
         req.file.mimetype,
       );
+
       updates.imagem_url = url;
     } catch (e) {
       logger.error('Erro ao enviar imagem', e);
@@ -181,10 +192,11 @@ async function recoverPassword(req, res) {
   }
   try {
     await sendEmail(email, 'Recuperação de Senha', `Seu código: ${code}`);
+    res.json({ message: 'Código enviado' });
   } catch (e) {
     logger.error('Erro ao enviar email', e);
+    throw new AppError('Erro ao enviar email', 500);
   }
-  res.json({ message: 'Código enviado' });
 }
 
 async function resetPassword(req, res) {
