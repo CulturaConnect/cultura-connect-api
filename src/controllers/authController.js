@@ -154,6 +154,7 @@ async function updateProfile(req, res) {
       if (existingUsers.length !== cpfs.length) {
         throw new AppError('Alguns CPFs não foram encontrados', 404);
       }
+
       await companyService.updateCompanyUsers(
         user.id,
         existingUsers.map((u) => u.id),
