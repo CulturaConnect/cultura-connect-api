@@ -139,6 +139,9 @@ async function updateProfile(req, res) {
   const user = await userService.findUserById(req.user.id);
   if (!user) throw new AppError('Usuário não encontrado', 404);
 
+  console.log('Updating user:', user.id);
+  console.log('Request body:', req.body);
+
   const updates = {};
   if (user.type === 'person') {
     if (req.body.nomeCompleto) updates.nome_completo = req.body.nomeCompleto;
@@ -146,11 +149,27 @@ async function updateProfile(req, res) {
   } else if (user.type === 'company') {
     if (req.body.telefone) updates.telefone = req.body.telefone;
     if (req.body.usuariosCpfs) {
-      const cpfs = req.body.usuariosCpfs;
+      let cpfs = [];
+
+      try {
+        cpfs = JSON.parse(req.body.usuariosCpfs);
+      } catch (error) {
+        throw new AppError(
+          'Formato inválido para CPFs. Esperado um array JSON de strings.',
+          400,
+        );
+      }
+
       if (!Array.isArray(cpfs)) {
         throw new AppError('Usuários devem ser um array de CPFs', 400);
       }
+
+      if (!cpfs.every((item) => typeof item === 'string')) {
+        throw new AppError('Todos os CPFs no array devem ser strings.', 400);
+      }
+
       const existingUsers = await userService.findUsersByCpfs(cpfs);
+
       if (existingUsers.length !== cpfs.length) {
         throw new AppError('Alguns CPFs não foram encontrados', 404);
       }
