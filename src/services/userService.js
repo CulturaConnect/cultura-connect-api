@@ -41,6 +41,17 @@ async function createCompany(user) {
   });
 }
 
+async function createAdmin(user) {
+  const { id, email, senha, nome } = user;
+  await User.create({
+    id,
+    type: 'admin',
+    email,
+    senha,
+    nome_completo: nome,
+  });
+}
+
 async function updatePassword(email, senha) {
   await User.update({ senha }, { where: { email } });
 }
@@ -68,6 +79,7 @@ module.exports = {
   findUserById,
   createPerson,
   createCompany,
+  createAdmin,
   updatePassword,
   updateUser,
   saveResetCode,
