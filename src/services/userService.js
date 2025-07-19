@@ -8,6 +8,10 @@ async function findUserByCpf(cpf) {
   return User.findOne({ where: { cpf } });
 }
 
+async function findUserByCnpj(cnpj) {
+  return User.findOne({ where: { cnpj } });
+}
+
 async function findUserById(id) {
   return User.findByPk(id);
 }
@@ -26,7 +30,17 @@ async function createPerson(user) {
 }
 
 async function createCompany(user) {
-  const { id, cnpj, isMei, email, senha, razaoSocial, inscricaoEstadual, inscricaoMunicipal, telefone } = user;
+  const {
+    id,
+    cnpj,
+    isMei,
+    email,
+    senha,
+    razaoSocial,
+    inscricaoEstadual,
+    inscricaoMunicipal,
+    telefone,
+  } = user;
   await User.create({
     id,
     type: 'company',
@@ -65,6 +79,7 @@ async function deleteResetCode(email) {
 module.exports = {
   findUserByEmail,
   findUserByCpf,
+  findUserByCnpj,
   findUserById,
   createPerson,
   createCompany,

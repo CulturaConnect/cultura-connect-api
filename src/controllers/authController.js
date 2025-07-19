@@ -20,6 +20,12 @@ async function registerPerson(req, res) {
   if (existing) {
     throw new AppError('Email já registrado', 400);
   }
+
+  const existingCpf = await userService.findUserByCpf(cpf);
+  if (existingCpf) {
+    throw new AppError('CPF já registrado', 400);
+  }
+
   const hashed = await bcrypt.hash(senha, 10);
   const user = {
     id: uuidv4(),
@@ -53,8 +59,6 @@ async function registerCompany(req, res) {
     !email ||
     !senha ||
     !razaoSocial ||
-    !inscricaoEstadual ||
-    !inscricaoMunicipal ||
     !telefone
   ) {
     throw new AppError('Dados incompletos', 400);
@@ -63,6 +67,12 @@ async function registerCompany(req, res) {
   if (existing) {
     throw new AppError('Email já registrado', 400);
   }
+
+  const existingCnpj = await userService.findUserByCnpj(cnpj);
+  if (existingCnpj) {
+    throw new AppError('CNPJ já registrado', 400);
+  }
+
   const hashed = await bcrypt.hash(senha, 10);
   const user = {
     id: uuidv4(),
