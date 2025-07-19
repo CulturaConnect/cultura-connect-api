@@ -16,6 +16,15 @@ async function findUserById(id) {
   return User.findByPk(id);
 }
 
+async function findUsersByCpfs() {
+  return User.findAll({
+    where: {
+      type: 'person',
+    },
+    attributes: ['cpf'],
+  });
+}
+
 async function createPerson(user) {
   const { nomeCompleto, cpf, email, telefone, senha, id } = user;
   await User.create({
@@ -100,4 +109,5 @@ module.exports = {
   saveResetCode,
   getResetCode,
   deleteResetCode,
+  findUsersByCpfs,
 };

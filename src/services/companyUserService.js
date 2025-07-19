@@ -6,14 +6,31 @@ async function addUserToCompany(companyId, userId) {
 
 async function getUsersForCompany(companyId) {
   const links = await CompanyUser.findAll({ where: { company_id: companyId } });
-  const ids = links.map(l => l.user_id);
+  const ids = links.map((l) => l.user_id);
   if (ids.length === 0) return [];
   return User.findAll({ where: { id: ids } });
 }
 
+async function updateCompanyUsers(companyId, userIds) {
+  await CompanyUser.destroy({ where: { company_id: companyId } });
+
+  const promises = userIds.map((userId) => addUserToCompany(companyId, userId));
+
+  await Promise.all(promises);
+
+  return getUsersForCompany(companyId);
+}
+
 async function userBelongsToCompany(companyId, userId) {
-  const link = await CompanyUser.findOne({ where: { company_id: companyId, user_id: userId } });
+  const link = await CompanyUser.findOne({
+    where: { company_id: companyId, user_id: userId },
+  });
   return !!link;
 }
 
-module.exports = { addUserToCompany, getUsersForCompany, userBelongsToCompany };
+module.exports = {
+  addUserToCompany,
+  getUsersForCompany,
+  userBelongsToCompany,
+  updateCompanyUsers,
+};

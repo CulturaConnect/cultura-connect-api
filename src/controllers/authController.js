@@ -145,6 +145,20 @@ async function updateProfile(req, res) {
     if (req.body.telefone) updates.telefone = req.body.telefone;
   } else if (user.type === 'company') {
     if (req.body.telefone) updates.telefone = req.body.telefone;
+    if (req.body.usuariosCpfs) {
+      const cpfs = req.body.usuariosCpfs;
+      if (!Array.isArray(cpfs)) {
+        throw new AppError('Usuários devem ser um array de CPFs', 400);
+      }
+      const existingUsers = await userService.findUsersByCpfs(cpfs);
+      if (existingUsers.length !== cpfs.length) {
+        throw new AppError('Alguns CPFs não foram encontrados', 404);
+      }
+      await companyService.updateCompanyUsers(
+        user.id,
+        existingUsers.map((u) => u.id),
+      );
+    }
   }
 
   if (req.body.novaSenha) {
