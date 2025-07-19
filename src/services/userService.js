@@ -1,4 +1,5 @@
 const { User, ResetCode } = require('../models');
+const { Op } = require('sequelize');
 
 async function findUserByEmail(email) {
   return User.findOne({ where: { email } });
@@ -16,12 +17,12 @@ async function findUserById(id) {
   return User.findByPk(id);
 }
 
-async function findUsersByCpfs() {
+async function findUsersByCpfs(cpfs) {
   return User.findAll({
     where: {
       type: 'person',
+      cpf: Array.isArray(cpfs) ? { [Op.in]: cpfs } : cpfs,
     },
-    attributes: ['cpf'],
   });
 }
 
