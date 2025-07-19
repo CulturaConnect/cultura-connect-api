@@ -29,6 +29,8 @@ S3_BUCKET_NAME=
 JWT_SECRET=
 TOKEN_EXPIRY=
 PORT=
+ADMIN_EMAIL=
+ADMIN_PASSWORD=
 ```
 
 ### Executando
@@ -39,6 +41,12 @@ npm start
 
 # Ambiente de desenvolvimento
 npm run dev
+```
+
+Para criar ou garantir a existência de um usuário administrador, utilize:
+
+```bash
+npm run create-admin
 ```
 
 A primeira execução criará as tabelas no banco configurado. Certifique-se de que o PostgreSQL está em execução.
@@ -72,6 +80,9 @@ A primeira execução criará as tabelas no banco configurado. Certifique-se de 
 
 ### Notifications
 - `GET /notifications/{userId}` – lista notificações do usuário
+
+### Admin
+- `GET /admin/metrics` – métricas de projetos
 
 Para detalhes completos acesse `http://localhost:3000/docs` após iniciar o servidor.
 
