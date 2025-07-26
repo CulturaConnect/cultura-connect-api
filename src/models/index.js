@@ -153,6 +153,31 @@ const Notification = sequelize.define(
   },
 );
 
+const BudgetItem = sequelize.define(
+  'BudgetItem',
+  {
+    id: {
+      type: DataTypes.UUID,
+      primaryKey: true,
+      allowNull: false,
+    },
+    project_id: {
+      type: DataTypes.UUID,
+      allowNull: false,
+    },
+    description: DataTypes.STRING,
+    quantity: DataTypes.FLOAT,
+    unit: DataTypes.STRING,
+    unit_qty: DataTypes.FLOAT,
+    unit_value: DataTypes.FLOAT,
+    adjust_total: DataTypes.BOOLEAN,
+  },
+  {
+    tableName: 'budget_items',
+    timestamps: false,
+  },
+);
+
 module.exports = {
   sequelize,
   User,
@@ -160,4 +185,5 @@ module.exports = {
   Project,
   CompanyUser,
   Notification,
+  BudgetItem,
 };
