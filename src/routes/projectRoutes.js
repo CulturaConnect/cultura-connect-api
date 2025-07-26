@@ -1,5 +1,7 @@
 const express = require('express');
 const projectController = require('../controllers/projectController');
+const budgetController = require('../controllers/budgetController');
+const scheduleController = require('../controllers/scheduleController');
 const authMiddleware = require('../middlewares/authMiddleware');
 const multer = require('multer');
 const asyncHandler = require('../utils/asyncHandler');
@@ -91,6 +93,13 @@ const router = express.Router();
  *                       type: string
  *                     descricao:
  *                       type: string
+ *                     acompanhamento:
+ *                       type: string
+ *                     evidencias:
+ *                       type: array
+ *                       items:
+ *                         type: string
+ *                         format: uri
  *               responsavel_principal_id:
  *                 type: string
  *               equipe:
@@ -234,6 +243,13 @@ router.get('/:id', authMiddleware, asyncHandler(projectController.get));
  *                       type: string
  *                     descricao:
  *                       type: string
+ *                     acompanhamento:
+ *                       type: string
+ *                     evidencias:
+ *                       type: array
+ *                       items:
+ *                         type: string
+ *                         format: uri
  *               responsavel_principal_id:
  *                 type: string
  *               equipe:
@@ -309,5 +325,141 @@ router.delete('/:id', authMiddleware, asyncHandler(projectController.remove));
  *         description: URL da imagem enviada
  */
 router.post('/:id/imagem', authMiddleware, upload.single('imagem'), asyncHandler(projectController.uploadImage));
+
+/**
+ * @swagger
+ * /projects/{id}/budget-items:
+ *   get:
+ *     summary: Lista itens de orçamento do projeto
+ *     tags: [Projects]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Lista de itens
+ */
+router.get('/:id/budget-items', authMiddleware, asyncHandler(budgetController.list));
+
+/**
+ * @swagger
+ * /projects/{id}/budget-items:
+ *   patch:
+ *     summary: Atualiza itens de orçamento do projeto
+ *     tags: [Projects]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: array
+ *             items:
+ *               type: object
+ *               properties:
+ *                 description:
+ *                   type: string
+ *                 quantity:
+ *                   type: number
+ *                 unit:
+ *                   type: string
+ *                 unitQty:
+ *                   type: number
+ *                 unitValue:
+ *                   type: number
+ *                 adjustTotal:
+ *                   type: boolean
+ *     responses:
+ *       200:
+ *         description: Itens atualizados
+ */
+router.patch('/:id/budget-items', authMiddleware, asyncHandler(budgetController.update));
+
+/**
+ * @swagger
+ * /projects/{id}/cronograma:
+ *   patch:
+ *     summary: Atualiza o cronograma de atividades do projeto
+ *     tags: [Projects]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: array
+ *             items:
+ *               type: object
+ *               properties:
+ *                 titulo:
+ *                   type: string
+ *                 descricao:
+ *                   type: string
+ *                 acompanhamento:
+ *                   type: string
+ *                 evidencias:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                     format: uri
+ *     responses:
+ *       200:
+ *         description: Cronograma atualizado
+ */
+router.patch('/:id/cronograma', authMiddleware, asyncHandler(scheduleController.update));
+
+/**
+ * @swagger
+ * /projects/{id}/cronograma/{index}/evidencias:
+ *   post:
+ *     summary: Adiciona evidência a uma atividade do cronograma
+ *     tags: [Projects]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: index
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               arquivo:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       200:
+ *         description: URL da evidência
+ */
+router.post('/:id/cronograma/:index/evidencias', authMiddleware, upload.single('arquivo'), asyncHandler(scheduleController.uploadEvidence));
 
 module.exports = router;
