@@ -20,6 +20,27 @@ async function update(req, res) {
   if (!project) throw new AppError('Projeto não encontrado', 404);
   const allowed = await projectService.userCanViewProject(project, req.user);
   if (!allowed) throw new AppError('Projeto não encontrado', 404);
+
+  if (req.files && req.files.length) {
+    for (const file of req.files) {
+      const match = file.fieldname.match(/^evidencias\[(\d+)\]$/);
+      if (!match) continue;
+      const idx = parseInt(match[1], 10);
+      if (Number.isNaN(idx) || idx < 0 || idx >= cronograma.length) continue;
+      const ext = path.extname(file.originalname);
+      const baseName = path
+        .basename(file.originalname, ext)
+        .toLowerCase()
+        .replace(/\s+/g, '-')
+        .replace(/[^a-z0-9\-]/g, '');
+      const fileName = `${Date.now()}_${baseName}${ext}`;
+      const key = `projects/${id}/atividades/${idx}/${fileName}`;
+      const url = await s3Service.uploadFile(file.buffer, key, file.mimetype);
+      if (!cronograma[idx].evidencias) cronograma[idx].evidencias = [];
+      cronograma[idx].evidencias.push(url);
+    }
+  }
+
   await projectService.updateProject(id, { cronograma_atividades: cronograma });
   const updated = await projectService.getProjectById(id);
   res.json(updated.cronograma_atividades);

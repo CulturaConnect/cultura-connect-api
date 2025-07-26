@@ -424,36 +424,45 @@ router.get('/:id/cronograma', authMiddleware, asyncHandler(scheduleController.li
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
- *             type: array
- *             items:
- *               type: object
- *               properties:
- *                 titulo:
- *                   type: string
- *                 descricao:
- *                   type: string
- *                 acompanhamento:
- *                   type: string
- *                 data_inicio:
- *                   type: string
- *                   format: date-time
- *                 data_fim:
- *                   type: string
- *                   format: date-time
- *                 status:
- *                   type: string
- *                 evidencias:
- *                   type: array
- *                   items:
- *                     type: string
- *                     format: uri
+ *             type: object
+ *             properties:
+ *               cronograma_atividades:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     titulo:
+ *                       type: string
+ *                     descricao:
+ *                       type: string
+ *                     acompanhamento:
+ *                       type: string
+ *                     data_inicio:
+ *                       type: string
+ *                       format: date-time
+ *                     data_fim:
+ *                       type: string
+ *                       format: date-time
+ *                     status:
+ *                       type: string
+ *               evidencias[0]:
+ *                 type: string
+ *                 format: binary
+ *               evidencias[1]:
+ *                 type: string
+ *                 format: binary
  *     responses:
  *       200:
  *         description: Cronograma atualizado
  */
-router.patch('/:id/cronograma', authMiddleware, asyncHandler(scheduleController.update));
+router.patch(
+  '/:id/cronograma',
+  authMiddleware,
+  upload.any(),
+  asyncHandler(scheduleController.update),
+);
 
 /**
  * @swagger
