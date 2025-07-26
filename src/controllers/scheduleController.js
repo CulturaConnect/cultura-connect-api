@@ -5,7 +5,14 @@ const path = require('path');
 
 async function update(req, res) {
   const { id } = req.params;
-  const cronograma = req.body.cronograma_atividades || req.body;
+  let cronograma = req.body.cronograma_atividades || req.body;
+  if (typeof cronograma === 'string') {
+    try {
+      cronograma = JSON.parse(cronograma);
+    } catch (e) {
+      throw new AppError('Cronograma inválido', 400);
+    }
+  }
   if (!Array.isArray(cronograma)) {
     throw new AppError('Cronograma inválido', 400);
   }
@@ -45,4 +52,13 @@ async function uploadEvidence(req, res) {
   res.json({ url });
 }
 
-module.exports = { update, uploadEvidence };
+async function list(req, res) {
+  const { id } = req.params;
+  const project = await projectService.getProjectById(id);
+  if (!project) throw new AppError('Projeto não encontrado', 404);
+  const allowed = await projectService.userCanViewProject(project, req.user);
+  if (!allowed) throw new AppError('Projeto não encontrado', 404);
+  res.json(project.cronograma_atividades || []);
+}
+
+module.exports = { update, list, uploadEvidence };

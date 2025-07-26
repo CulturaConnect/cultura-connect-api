@@ -390,6 +390,26 @@ router.patch('/:id/budget-items', authMiddleware, asyncHandler(budgetController.
 /**
  * @swagger
  * /projects/{id}/cronograma:
+ *   get:
+ *     summary: Lista atividades do cronograma do projeto
+ *     tags: [Projects]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Lista de atividades
+ */
+router.get('/:id/cronograma', authMiddleware, asyncHandler(scheduleController.list));
+
+/**
+ * @swagger
+ * /projects/{id}/cronograma:
  *   patch:
  *     summary: Atualiza o cronograma de atividades do projeto
  *     tags: [Projects]
@@ -415,6 +435,14 @@ router.patch('/:id/budget-items', authMiddleware, asyncHandler(budgetController.
  *                 descricao:
  *                   type: string
  *                 acompanhamento:
+ *                   type: string
+ *                 data_inicio:
+ *                   type: string
+ *                   format: date-time
+ *                 data_fim:
+ *                   type: string
+ *                   format: date-time
+ *                 status:
  *                   type: string
  *                 evidencias:
  *                   type: array
