@@ -84,6 +84,18 @@ const router = express.Router();
  *                 type: string
  *               metas:
  *                 type: string
+ *               apresentacao:
+ *                 type: string
+ *               historico:
+ *                 type: string
+ *               observacoes:
+ *                 type: string
+ *               descricao_proposta:
+ *                 type: string
+ *               descricao_contrapartida:
+ *                 type: string
+ *               justificativa:
+ *                 type: string
  *               cronograma_atividades:
  *                 type: array
  *                 items:
@@ -115,6 +127,16 @@ const router = express.Router();
  *                       type: string
  *               responsavel_legal_id:
  *                 type: string
+ *               anexos:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     descricao:
+ *                       type: string
+ *                     arquivo:
+ *                       type: string
+ *                       format: binary
  *     responses:
  *       201:
  *         description: Projeto criado
@@ -124,7 +146,7 @@ const router = express.Router();
 router.post(
   '/',
   authMiddleware,
-  upload.single('imagem'),
+  upload.any(),
   asyncHandler(projectController.create),
 );
 
