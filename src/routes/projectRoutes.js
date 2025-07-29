@@ -121,7 +121,12 @@ const router = express.Router();
  *       400:
  *         description: Dados inválidos
  */
-router.post('/', authMiddleware, upload.single('imagem'), asyncHandler(projectController.create));
+router.post(
+  '/',
+  authMiddleware,
+  upload.single('imagem'),
+  asyncHandler(projectController.create),
+);
 
 /**
  * @swagger
@@ -273,7 +278,6 @@ router.get('/:id', authMiddleware, asyncHandler(projectController.get));
  */
 router.patch('/:id', authMiddleware, asyncHandler(projectController.update));
 
-
 /**
  * @swagger
  * /projects/{id}:
@@ -324,7 +328,12 @@ router.delete('/:id', authMiddleware, asyncHandler(projectController.remove));
  *       200:
  *         description: URL da imagem enviada
  */
-router.post('/:id/imagem', authMiddleware, upload.single('imagem'), asyncHandler(projectController.uploadImage));
+router.post(
+  '/:id/imagem',
+  authMiddleware,
+  upload.single('imagem'),
+  asyncHandler(projectController.uploadImage),
+);
 
 /**
  * @swagger
@@ -344,7 +353,11 @@ router.post('/:id/imagem', authMiddleware, upload.single('imagem'), asyncHandler
  *       200:
  *         description: Lista de itens
  */
-router.get('/:id/budget-items', authMiddleware, asyncHandler(budgetController.list));
+router.get(
+  '/:id/budget-items',
+  authMiddleware,
+  asyncHandler(budgetController.list),
+);
 
 /**
  * @swagger
@@ -385,7 +398,11 @@ router.get('/:id/budget-items', authMiddleware, asyncHandler(budgetController.li
  *       200:
  *         description: Itens atualizados
  */
-router.patch('/:id/budget-items', authMiddleware, asyncHandler(budgetController.update));
+router.patch(
+  '/:id/budget-items',
+  authMiddleware,
+  asyncHandler(budgetController.update),
+);
 
 /**
  * @swagger
@@ -405,7 +422,47 @@ router.patch('/:id/budget-items', authMiddleware, asyncHandler(budgetController.
  *       200:
  *         description: Lista de atividades
  */
-router.get('/:id/cronograma', authMiddleware, asyncHandler(scheduleController.list));
+router.get(
+  '/:id/cronograma',
+  authMiddleware,
+  asyncHandler(scheduleController.list),
+);
+
+/**
+ * @swagger
+ * /projects/{id}/visibilidade:
+ *   patch:
+ *     summary: Atualiza visibilidade do projeto
+ *     tags: [Projects]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               isPublic:
+ *                 type: boolean
+ *                 description: Define se o projeto é público ou privado
+ *     responses:
+ *       200:
+ *         description: Visibilidade atualizada
+ *       404:
+ *         description: Projeto não encontrado
+ */
+router.patch(
+  '/:id/visibilidade',
+  authMiddleware,
+  asyncHandler(projectController.changeProjectVisibility),
+);
 
 /**
  * @swagger
@@ -439,10 +496,10 @@ router.get('/:id/cronograma', authMiddleware, asyncHandler(scheduleController.li
  *                       type: string
  *                     acompanhamento:
  *                       type: string
- *                     data_inicio:
+ *                     inicio:
  *                       type: string
  *                       format: date-time
- *                     data_fim:
+ *                     fim:
  *                       type: string
  *                       format: date-time
  *                     status:
@@ -497,6 +554,11 @@ router.patch(
  *       200:
  *         description: URL da evidência
  */
-router.post('/:id/cronograma/:index/evidencias', authMiddleware, upload.single('arquivo'), asyncHandler(scheduleController.uploadEvidence));
+router.post(
+  '/:id/cronograma/:index/evidencias',
+  authMiddleware,
+  upload.single('arquivo'),
+  asyncHandler(scheduleController.uploadEvidence),
+);
 
 module.exports = router;

@@ -7,15 +7,20 @@ const { sendEmail } = require('../services/emailService');
 const AppError = require('../errors/AppError');
 const logger = require('../utils/logger');
 const path = require('path');
+const { sanitizeCpfCnpj } = require('../utils/helper');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'replace_this_secret';
 const TOKEN_EXPIRY = process.env.TOKEN_EXPIRY || '7d';
 
 async function registerPerson(req, res) {
-  const { nomeCompleto, cpf, email, telefone, senha } = req.body;
+  let { nomeCompleto, cpf, email, telefone, senha } = req.body;
+
   if (!nomeCompleto || !cpf || !email || !telefone || !senha) {
     throw new AppError('Dados incompletos', 400);
   }
+
+  cpf = sanitizeCpfCnpj(cpf);
+
   const existing = await userService.findUserByEmail(email);
   if (existing) {
     throw new AppError('Email já registrado', 400);
@@ -30,19 +35,20 @@ async function registerPerson(req, res) {
   const user = {
     id: uuidv4(),
     type: 'person',
-    nomeCompleto,
+    nome_completo: nomeCompleto,
     cpf,
     email,
     telefone,
     senha: hashed,
   };
+
   await userService.createPerson(user);
   logger.info('User registered', user.id);
   res.status(201).json({ message: 'Registrado com sucesso' });
 }
 
 async function registerCompany(req, res) {
-  const {
+  let {
     cnpj,
     isMei,
     email,
@@ -53,6 +59,7 @@ async function registerCompany(req, res) {
     telefone,
     usuariosCpfs,
   } = req.body;
+
   if (
     !cnpj ||
     typeof isMei !== 'boolean' ||
@@ -63,6 +70,9 @@ async function registerCompany(req, res) {
   ) {
     throw new AppError('Dados incompletos', 400);
   }
+
+  cnpj = sanitizeCpfCnpj(cnpj);
+
   const existing = await userService.findUserByEmail(email);
   if (existing) {
     throw new AppError('Email já registrado', 400);
@@ -78,22 +88,26 @@ async function registerCompany(req, res) {
     id: uuidv4(),
     type: 'company',
     cnpj,
-    isMei,
+    is_mei: isMei,
     email,
     senha: hashed,
-    razaoSocial,
-    inscricaoEstadual,
-    inscricaoMunicipal,
+    razao_social: razaoSocial,
+    inscricao_estadual: inscricaoEstadual,
+    inscricao_municipal: inscricaoMunicipal,
     telefone,
   };
+
   await userService.createCompany(user);
+
   if (Array.isArray(usuariosCpfs)) {
-    for (const cpf of usuariosCpfs) {
+    for (let cpf of usuariosCpfs) {
+      cpf = sanitizeCpfCnpj(cpf);
       const u = await userService.findUserByCpf(cpf);
-      if (!u) throw new AppError('Usuário não encontrado', 404);
+      if (!u) throw new AppError(`Usuário com CPF ${cpf} não encontrado`, 404);
       await companyService.addUserToCompany(user.id, u.id);
     }
   }
+
   logger.info('Company registered', user.id);
   res.status(201).json({ message: 'Registrado com sucesso', id: user.id });
 }
@@ -138,9 +152,6 @@ async function profile(req, res) {
 async function updateProfile(req, res) {
   const user = await userService.findUserById(req.user.id);
   if (!user) throw new AppError('Usuário não encontrado', 404);
-
-  console.log('Updating user:', user.id);
-  console.log('Request body:', req.body);
 
   const updates = {};
   if (user.type === 'person') {

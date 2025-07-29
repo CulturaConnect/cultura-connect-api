@@ -4,6 +4,12 @@ const companyUserService = require('../services/companyUserService');
 const AppError = require('../errors/AppError');
 const logger = require('../utils/logger');
 const path = require('path');
+const { Project } = require('../models');
+
+const parseFloatSafe = (val) => {
+  const parsed = parseFloat(val);
+  return isNaN(parsed) ? null : parsed;
+};
 
 async function create(req, res) {
   const data = req.body;
@@ -37,12 +43,13 @@ async function create(req, res) {
   if (!data.areas_execucao) data.areas_execucao = [];
   if (!data.cronograma_atividades) data.cronograma_atividades = [];
   if (!data.equipe) data.equipe = [];
-  if (!data.orcamento_previsto && req.body.orcamentoPrevisto) {
-    data.orcamento_previsto = parseFloat(req.body.orcamentoPrevisto);
-  }
-  if (!data.orcamento_gasto && req.body.orcamentoGasto) {
-    data.orcamento_gasto = parseFloat(req.body.orcamentoGasto);
-  }
+  data.orcamento_previsto = parseFloatSafe(
+    data.orcamento_previsto ?? req.body.orcamentoPrevisto,
+  );
+
+  data.orcamento_gasto = parseFloatSafe(
+    data.orcamento_gasto ?? req.body.orcamentoGasto,
+  );
   if (req.user.type === 'company') {
     if (data.responsavel_principal_id) {
       const allowed = await companyUserService.userBelongsToCompany(
@@ -197,4 +204,25 @@ async function uploadImage(req, res) {
   }
 }
 
-module.exports = { create, list, get, update, remove, uploadImage };
+async function changeProjectVisibility(req, res) {
+  const { id } = req.params;
+  const { isPublic } = req.body;
+
+  const project = await projectService.getProjectById(id);
+  if (!project) throw new AppError('Projeto não encontrado', 404);
+
+  project.is_public = isPublic;
+  await Project.update({ is_public: !!isPublic }, { where: { id } });
+  logger.info('Project visibility updated', id);
+  res.json({ message: 'Visibilidade atualizada com sucesso' });
+}
+
+module.exports = {
+  create,
+  list,
+  get,
+  update,
+  remove,
+  uploadImage,
+  changeProjectVisibility,
+};
