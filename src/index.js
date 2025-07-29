@@ -31,17 +31,20 @@ app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.use(errorHandler);
 
+app.use(express.urlencoded({ extended: true }));
+
 const PORT = process.env.PORT || 3000;
+
 sequelize.sync().then(async () => {
   await ensureAdminUser(
     process.env.ADMIN_EMAIL || 'admin@example.com',
     process.env.ADMIN_PASSWORD || 'admin123',
   );
+
+  // Inicializa os cron jobs
+  require('./tasks/scheduler'); // 👈 aqui entra o novo
+
   app.listen(PORT, () => {
     logger.info('Server listening on PORT:', PORT);
   });
-  notificationService.notifyUpcomingProjects();
-  notificationService.removeOldProjects();
-  setInterval(notificationService.notifyUpcomingProjects, 24 * 60 * 60 * 1000);
-  setInterval(notificationService.removeOldProjects, 24 * 60 * 60 * 1000);
 });

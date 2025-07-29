@@ -51,22 +51,31 @@ async function create(req, res) {
     data.orcamento_gasto ?? req.body.orcamentoGasto,
   );
 
+  data.id = uuidv4();
+  data.status = 'novo';
+
   const anexos = [];
-  Object.keys(req.body).forEach((key) => {
-    const match = key.match(/^anexos\[(\d+)\]\[descricao\]$/);
+
+  Object.entries(req.body).forEach(([key, value]) => {
+    console.log(`Processing key: ${key}, value: ${value}`);
+    const match = key.match(/^anexos_descricao_(\d+)$/);
     if (match) {
       const idx = parseInt(match[1], 10);
       anexos[idx] = anexos[idx] || {};
-      anexos[idx].descricao = req.body[key];
+      anexos[idx].descricao = value;
     }
   });
+
   let imagemFile = null;
+
   if (req.files && req.files.length) {
     for (const file of req.files) {
       if (file.fieldname === 'imagem') {
         imagemFile = file;
+        continue;
       }
-      const match = file.fieldname.match(/^anexos\[(\d+)\]\[arquivo\]$/);
+
+      const match = file.fieldname.match(/^anexos_arquivo_(\d+)$/);
       if (match) {
         const idx = parseInt(match[1], 10);
         const ext = path.extname(file.originalname);
@@ -87,7 +96,9 @@ async function create(req, res) {
       }
     }
   }
-  data.anexos = anexos.filter(Boolean);
+
+  data.anexos = anexos.filter((a) => a && (a.descricao || a.arquivo_url));
+
   if (req.user.type === 'company') {
     if (data.responsavel_principal_id) {
       const allowed = await companyUserService.userBelongsToCompany(
@@ -112,8 +123,7 @@ async function create(req, res) {
     data.responsavel_principal_id = req.user.id;
     data.responsavel_legal_id = req.user.id;
   }
-  data.id = uuidv4();
-  data.status = 'novo';
+
   if (imagemFile) {
     try {
       const ext = path.extname(imagemFile.originalname);
