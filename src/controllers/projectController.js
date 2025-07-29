@@ -50,6 +50,44 @@ async function create(req, res) {
   data.orcamento_gasto = parseFloatSafe(
     data.orcamento_gasto ?? req.body.orcamentoGasto,
   );
+
+  const anexos = [];
+  Object.keys(req.body).forEach((key) => {
+    const match = key.match(/^anexos\[(\d+)\]\[descricao\]$/);
+    if (match) {
+      const idx = parseInt(match[1], 10);
+      anexos[idx] = anexos[idx] || {};
+      anexos[idx].descricao = req.body[key];
+    }
+  });
+  let imagemFile = null;
+  if (req.files && req.files.length) {
+    for (const file of req.files) {
+      if (file.fieldname === 'imagem') {
+        imagemFile = file;
+      }
+      const match = file.fieldname.match(/^anexos\[(\d+)\]\[arquivo\]$/);
+      if (match) {
+        const idx = parseInt(match[1], 10);
+        const ext = path.extname(file.originalname);
+        const baseName = path
+          .basename(file.originalname, ext)
+          .toLowerCase()
+          .replace(/\s+/g, '-')
+          .replace(/[^a-z0-9\-]/g, '');
+        const fileName = `${Date.now()}_${baseName}${ext}`;
+        const key = `projects/${data.id}/anexos/${fileName}`;
+        const url = await require('../services/s3Service').uploadFile(
+          file.buffer,
+          key,
+          file.mimetype,
+        );
+        anexos[idx] = anexos[idx] || {};
+        anexos[idx].arquivo_url = url;
+      }
+    }
+  }
+  data.anexos = anexos.filter(Boolean);
   if (req.user.type === 'company') {
     if (data.responsavel_principal_id) {
       const allowed = await companyUserService.userBelongsToCompany(
@@ -76,12 +114,12 @@ async function create(req, res) {
   }
   data.id = uuidv4();
   data.status = 'novo';
-  if (req.file) {
+  if (imagemFile) {
     try {
-      const ext = path.extname(req.file.originalname);
+      const ext = path.extname(imagemFile.originalname);
 
       const baseName = path
-        .basename(req.file.originalname, ext)
+        .basename(imagemFile.originalname, ext)
         .toLowerCase()
         .replace(/\s+/g, '-')
         .replace(/[^a-z0-9\-]/g, '');
@@ -90,9 +128,9 @@ async function create(req, res) {
       const key = `projects/${data.id}/${fileName}`;
 
       const url = await require('../services/s3Service').uploadFile(
-        req.file.buffer,
+        imagemFile.buffer,
         key,
-        req.file.mimetype,
+        imagemFile.mimetype,
       );
       data.imagem_url = url;
     } catch (e) {
@@ -128,7 +166,22 @@ async function update(req, res) {
     'atrasado',
     'concluido',
   ];
+  const jsonFields = [
+    'modelo',
+    'areas_execucao',
+    'cronograma_atividades',
+    'equipe',
+    'anexos',
+  ];
+  jsonFields.forEach((f) => {
+    if (typeof data[f] === 'string') {
+      try {
+        data[f] = JSON.parse(data[f]);
+      } catch (_) {}
+    }
+  });
   if (data.cronograma_atividades === undefined) data.cronograma_atividades = [];
+  if (data.anexos === undefined) data.anexos = [];
   if (req.body.orcamentoPrevisto) {
     data.orcamento_previsto = parseFloat(req.body.orcamentoPrevisto);
   }
