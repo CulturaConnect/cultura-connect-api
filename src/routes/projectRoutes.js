@@ -78,6 +78,8 @@ const router = express.Router();
  *                       type: string
  *                     cidade:
  *                       type: string
+ *                     observacoes:
+ *                       type: string
  *               resumo:
  *                 type: string
  *               objetivos_gerais:
@@ -87,8 +89,6 @@ const router = express.Router();
  *               apresentacao:
  *                 type: string
  *               historico:
- *                 type: string
- *               observacoes:
  *                 type: string
  *               descricao_proposta:
  *                 type: string
@@ -254,6 +254,8 @@ router.get('/:id', authMiddleware, asyncHandler(projectController.get));
  *                     bairro:
  *                       type: string
  *                     cidade:
+ *                       type: string
+ *                     observacoes:
  *                       type: string
  *               resumo:
  *                 type: string

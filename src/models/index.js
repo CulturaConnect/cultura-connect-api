@@ -81,7 +81,6 @@ const Project = sequelize.define(
     metas: DataTypes.TEXT,
     apresentacao: DataTypes.TEXT,
     historico: DataTypes.TEXT,
-    observacoes: DataTypes.TEXT,
     descricao_proposta: DataTypes.TEXT,
     descricao_contrapartida: DataTypes.TEXT,
     justificativa: DataTypes.TEXT,
