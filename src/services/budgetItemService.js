@@ -40,13 +40,25 @@ async function replaceItems(projectId, items) {
 
 async function updateProjectTotal(projectId) {
   const items = await getItemsForProject(projectId);
-  let total = 0;
+
+  let orcamentoGasto = 0;
+  let orcamentoTotal = 0;
+
   for (const i of items) {
     const value = (i.quantity || 0) * (i.unitQty || 0) * (i.unitValue || 0);
-    if (i.adjustTotal) total += value;
+
+    if (i.adjustTotal) {
+      orcamentoTotal += value;
+    } else {
+      orcamentoGasto += value;
+    }
   }
+
   await Project.update(
-    { orcamento_gasto: total },
+    {
+      orcamento_gasto: orcamentoGasto,
+      orcamento_total: orcamentoTotal,
+    },
     { where: { id: projectId } },
   );
 }
