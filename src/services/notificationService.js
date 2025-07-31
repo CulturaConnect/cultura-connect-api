@@ -99,10 +99,43 @@ async function removeOldProjects() {
   }
 }
 
+async function notifyProjectCreated(project) {
+  const users = await getUsersForProject(project);
+  for (const u of users) {
+    try {
+      await addNotification(u.id, `O projeto ${project.nome} foi criado.`);
+    } catch (_) {}
+  }
+}
+
+async function notifyProjectUpdated(project) {
+  const users = await getUsersForProject(project);
+  for (const u of users) {
+    try {
+      await addNotification(u.id, `O projeto ${project.nome} foi atualizado.`);
+    } catch (_) {}
+  }
+}
+
+async function notifyBudgetUpdated(project) {
+  const users = await getUsersForProject(project);
+  for (const u of users) {
+    try {
+      await addNotification(
+        u.id,
+        `O orçamento do projeto ${project.nome} foi atualizado.`,
+      );
+    } catch (_) {}
+  }
+}
+
 module.exports = {
   notifyProjectStatusChange,
   notifyUpcomingProjects,
   removeOldProjects,
   addNotification,
   getNotificationsForUser,
+  notifyProjectCreated,
+  notifyProjectUpdated,
+  notifyBudgetUpdated,
 };
