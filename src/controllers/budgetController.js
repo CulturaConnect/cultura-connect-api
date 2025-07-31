@@ -28,6 +28,7 @@ async function update(req, res) {
     throw new AppError('Projeto não encontrado', 404);
   }
   const result = await budgetService.replaceItems(id, items);
+  await require('../services/notificationService').notifyBudgetUpdated(project);
   res.json(result);
 }
 

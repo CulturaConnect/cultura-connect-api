@@ -149,6 +149,7 @@ async function create(req, res) {
     }
   }
   const project = await projectService.createProject(data);
+  await require('../services/notificationService').notifyProjectCreated(project);
   logger.info('Project created', project.id);
   res.status(201).json(project);
 }
@@ -234,6 +235,7 @@ async function update(req, res) {
       project,
     );
   }
+  await require('../services/notificationService').notifyProjectUpdated(project);
   logger.info('Project updated', req.params.id);
   res.json(project);
 }
