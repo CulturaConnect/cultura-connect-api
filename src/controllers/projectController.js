@@ -191,8 +191,14 @@ async function update(req, res) {
       } catch (_) {}
     }
   });
-  if (data.cronograma_atividades === undefined) data.cronograma_atividades = [];
-  if (data.anexos === undefined) data.anexos = [];
+  // Não sobrescrever cronograma_atividades e anexos se não foram fornecidos
+  // Isso preserva os dados existentes em operações PATCH
+  if (data.cronograma_atividades === undefined) {
+    delete data.cronograma_atividades;
+  }
+  if (data.anexos === undefined) {
+    delete data.anexos;
+  }
   if (req.body.orcamentoPrevisto) {
     data.orcamento_previsto = parseFloat(req.body.orcamentoPrevisto);
   }

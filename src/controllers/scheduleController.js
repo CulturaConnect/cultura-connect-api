@@ -21,6 +21,18 @@ async function update(req, res) {
   const allowed = await projectService.userCanViewProject(project, req.user);
   if (!allowed) throw new AppError('Projeto não encontrado', 404);
 
+  // Processar descrições das evidências
+  const evidenciasDescricoes = {};
+  Object.entries(req.body).forEach(([key, value]) => {
+    const match = key.match(/^evidencias_descricao_(\d+)_(\d+)$/);
+    if (match) {
+      const activityIdx = parseInt(match[1], 10);
+      const evidenceIdx = parseInt(match[2], 10);
+      if (!evidenciasDescricoes[activityIdx]) evidenciasDescricoes[activityIdx] = {};
+      evidenciasDescricoes[activityIdx][evidenceIdx] = value;
+    }
+  });
+
   if (req.files && req.files.length) {
     for (const file of req.files) {
       const match = file.fieldname.match(/^evidencias\[(\d+)\]$/);
@@ -37,7 +49,17 @@ async function update(req, res) {
       const key = `projects/${id}/atividades/${idx}/${fileName}`;
       const url = await s3Service.uploadFile(file.buffer, key, file.mimetype);
       if (!cronograma[idx].evidencias) cronograma[idx].evidencias = [];
-      cronograma[idx].evidencias.push(url);
+      
+      // Buscar a descrição correspondente ou usar o nome original do arquivo
+      const currentEvidenceIndex = cronograma[idx].evidencias.length;
+      const descricao = evidenciasDescricoes[idx] && evidenciasDescricoes[idx][currentEvidenceIndex] 
+        ? evidenciasDescricoes[idx][currentEvidenceIndex] 
+        : file.originalname;
+      
+      cronograma[idx].evidencias.push({
+        url: url,
+        descricao: descricao
+      });
     }
   }
 
