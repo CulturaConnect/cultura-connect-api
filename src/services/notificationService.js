@@ -25,7 +25,9 @@ async function getUsersForProject(project) {
   if (project.company_id) {
     const owner = await userService.findUserById(project.company_id);
     if (owner && owner.type === 'company') {
-      return companyUserService.getUsersForCompany(project.company_id);
+      const companyUsers = await companyUserService.getUsersForCompany(project.company_id);
+      // Incluir também a própria empresa nas notificações
+      return [owner, ...companyUsers];
     }
     if (owner) return [owner];
   }

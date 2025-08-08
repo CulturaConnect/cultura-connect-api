@@ -182,7 +182,6 @@ async function update(req, res) {
     'areas_execucao',
     'cronograma_atividades',
     'equipe',
-    'anexos',
   ];
   jsonFields.forEach((f) => {
     if (typeof data[f] === 'string') {
@@ -191,20 +190,71 @@ async function update(req, res) {
       } catch (_) {}
     }
   });
-  // Não sobrescrever cronograma_atividades e anexos se não foram fornecidos
-  // Isso preserva os dados existentes em operações PATCH
+
+  // Processar anexos como no método create
+  const anexos = [];
+  Object.entries(req.body).forEach(([key, value]) => {
+    const match = key.match(/^anexos_descricao_(\d+)$/);
+    if (match) {
+      const idx = parseInt(match[1], 10);
+      anexos[idx] = anexos[idx] || {};
+      anexos[idx].descricao = value;
+    }
+  });
+
+  let imagemFile = null;
+
+  if (req.files && req.files.length) {
+    for (const file of req.files) {
+      if (file.fieldname === 'imagem') {
+        imagemFile = file;
+        continue;
+      }
+
+      const match = file.fieldname.match(/^anexos_arquivo_(\d+)$/);
+      if (match) {
+        const idx = parseInt(match[1], 10);
+        const ext = path.extname(file.originalname);
+        const baseName = path
+          .basename(file.originalname, ext)
+          .toLowerCase()
+          .replace(/\s+/g, '-')
+          .replace(/[^a-z0-9\-]/g, '');
+        const fileName = `${Date.now()}_${baseName}${ext}`;
+        const key = `projects/${req.params.id}/anexos/${fileName}`;
+        const url = await require('../services/s3Service').uploadFile(
+          file.buffer,
+          key,
+          file.mimetype,
+        );
+        anexos[idx] = anexos[idx] || {};
+        anexos[idx].arquivo_url = url;
+      }
+    }
+  }
+
+  // Só atualizar anexos se foram enviados novos
+  if (anexos.length > 0) {
+    data.anexos = anexos.filter((a) => a && (a.descricao || a.arquivo_url));
+  }
+
+  // Não sobrescrever cronograma_atividades se não foram fornecidos
   if (data.cronograma_atividades === undefined) {
     delete data.cronograma_atividades;
   }
-  if (data.anexos === undefined) {
+  // Só deletar anexos se não foram processados novos anexos
+  if (data.anexos === undefined && anexos.length === 0) {
     delete data.anexos;
   }
-  if (req.body.orcamentoPrevisto) {
-    data.orcamento_previsto = parseFloat(req.body.orcamentoPrevisto);
-  }
-  if (req.body.orcamentoGasto) {
-    data.orcamento_gasto = parseFloat(req.body.orcamentoGasto);
-  }
+
+  data.orcamento_previsto = parseFloatSafe(
+    data.orcamento_previsto ?? req.body.orcamentoPrevisto,
+  );
+
+  data.orcamento_gasto = parseFloatSafe(
+    data.orcamento_gasto ?? req.body.orcamentoGasto,
+  );
+
   if (data.status !== undefined && !allowedStatuses.includes(data.status)) {
     throw new AppError('Status inválido', 400);
   }
@@ -234,6 +284,30 @@ async function update(req, res) {
     data.responsavel_principal_id = req.user.id;
     data.responsavel_legal_id = req.user.id;
   }
+
+  // Processar upload de imagem se enviada
+  if (imagemFile) {
+    try {
+      const ext = path.extname(imagemFile.originalname);
+      const baseName = path
+        .basename(imagemFile.originalname, ext)
+        .toLowerCase()
+        .replace(/\s+/g, '-')
+        .replace(/[^a-z0-9\-]/g, '');
+      const fileName = `${Date.now()}_${baseName}${ext}`;
+      const key = `projects/${req.params.id}/${fileName}`;
+      const url = await require('../services/s3Service').uploadFile(
+        imagemFile.buffer,
+        key,
+        imagemFile.mimetype,
+      );
+      data.imagem_url = url;
+    } catch (e) {
+      logger.error('Erro ao enviar imagem', e);
+      throw new AppError('Erro ao salvar imagem', 500);
+    }
+  }
+
   project = await projectService.updateProject(req.params.id, data);
   if (!project) throw new AppError('Projeto não encontrado', 404);
   if (data.status && data.status !== originalStatus) {

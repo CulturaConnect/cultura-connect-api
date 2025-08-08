@@ -300,7 +300,7 @@ router.get('/:id', authMiddleware, asyncHandler(projectController.get));
  *       404:
  *         description: Projeto não encontrado
  */
-router.patch('/:id', authMiddleware, asyncHandler(projectController.update));
+router.patch('/:id', authMiddleware, upload.any(), asyncHandler(projectController.update));
 
 /**
  * @swagger
