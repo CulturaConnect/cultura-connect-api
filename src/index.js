@@ -35,7 +35,9 @@ app.use(express.urlencoded({ extended: true }));
 
 const PORT = process.env.PORT || 3000;
 
-sequelize.sync().then(async () => {
+sequelize.sync({
+  alter: true
+}).then(async () => {
   await ensureAdminUser(
     process.env.ADMIN_EMAIL || 'admin@example.com',
     process.env.ADMIN_PASSWORD || 'admin123',
