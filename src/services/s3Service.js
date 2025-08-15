@@ -14,41 +14,41 @@ const s3 = new S3Client({
   },
 });
 
+
 /**
  * Faz upload de um buffer para S3/MinIO.
- * @param {Buffer|Uint8Array|ReadableStream} buffer
- * @param {string} key - caminho/arquivo (ex: "uploads/abc.png")
- * @param {string} contentType - (ex: "image/png")
- * @returns {string} URL pública (se bucket/objeto forem públicos) ou URL "endereço do objeto"
+ * @param {Buffer|Uint8Array} buffer
+ * @param {string} key ex: "projects/123/file.png"
+ * @param {string} contentType ex: "image/png"
+ * @returns {string} URL do objeto
  */
 async function uploadFile(buffer, key, contentType = "application/octet-stream") {
   const Bucket = process.env.S3_BUCKET_NAME;
+  if (!Bucket) throw new Error("S3_BUCKET_NAME ausente");
+  if (!buffer || !buffer.length) throw new Error("buffer vazio");
 
-  console.log("[S3 CONFIG]", {
-  region: process.env.S3_REGION || process.env.AWS_REGION || "us-east-1",
-  endpoint: process.env.S3_ENDPOINT || undefined,
-  forcePathStyle: process.env.S3_FORCE_PATH_STYLE,
-  accessKeyId: process.env.S3_ACCESS_KEY || process.env.AWS_ACCESS_KEY_ID,
-  secretAccessKey: process.env.S3_SECRET_KEY ? "***HIDDEN***" : undefined,
-  bucket: process.env.S3_BUCKET_NAME
-});
-
+  // Importante: informar ContentLength pra evitar chunked e não quebrar a assinatura
   const command = new PutObjectCommand({
     Bucket,
     Key: key,
     Body: buffer,
     ContentType: contentType,
-    // ACL: "public-read", // AWS só; MinIO geralmente ignora ACL (melhor usar policy no bucket)
+    ContentLength: buffer.length,
+    // Cache-Control/ACL se precisar:
+    // CacheControl: "public, max-age=31536000, immutable",
+    // ACL: "public-read", // (AWS) MinIO geralmente ignora (prefira policy)
   });
 
-  await s3.send(command);
+   await s3.send(command);
 
-  // Monta URL de retorno:
-  // - MinIO (com path-style): https://s3.seudominio.com/<bucket>/<key>
-  // - AWS (virtual-host):     https://<bucket>.s3.<region>.amazonaws.com/<key>
+  // Monta URL sem encodear as barras do path
+  const encodedBucket = encodeURIComponent(Bucket);
+  const encodedKey = key.split("/").map(encodeURIComponent).join("/");
+
   const url = isMinio
-    ? `${process.env.S3_ENDPOINT.replace(/\/+$/, "")}/${encodeURIComponent(Bucket)}/${encodeURIComponent(key)}`
-    : `https://${Bucket}.s3.${process.env.AWS_REGION || process.env.S3_REGION}.amazonaws.com/${encodeURIComponent(key)}`;
+    ? `${process.env.S3_ENDPOINT.replace(/\/+$/, "")}/${encodedBucket}/${encodedKey}`
+    : `https://${Bucket}.s3.${process.env.AWS_REGION || process.env.S3_REGION}.amazonaws.com/${encodedKey}`;
+
 
   return url;
 }
