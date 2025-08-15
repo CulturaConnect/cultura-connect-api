@@ -2,6 +2,15 @@ const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
 
 const isMinio = !!process.env.S3_ENDPOINT;
 
+console.log('isMinio', isMinio);
+console.log('S3_ENDPOINT', process.env.S3_ENDPOINT);
+console.log('S3_REGION', process.env.S3_REGION);
+console.log('S3_ACCESS_KEY', process.env.S3_ACCESS_KEY);
+console.log('S3_SECRET_KEY', process.env.S3_SECRET_KEY);
+console.log('S3_BUCKET_NAME', process.env.S3_BUCKET_NAME);
+console.log('S3_FORCE_PATH_STYLE', process.env.S3_FORCE_PATH_STYLE);
+
+
 const s3 = new S3Client({
   region: process.env.S3_REGION || process.env.AWS_REGION || "us-east-1",
   endpoint: process.env.S3_ENDPOINT || undefined,
