@@ -1,56 +1,68 @@
+// s3-client.js
 const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
+const { SignatureV4 } = require("@aws-sdk/signature-v4");
+const { Sha256 } = require("@aws-crypto/sha256-js");
+const { parseUrl } = require("@smithy/url-parser");
 
-const isMinio = !!process.env.S3_ENDPOINT;
+const endpoint = process.env.S3_ENDPOINT || undefined;
+const region = process.env.S3_REGION || process.env.AWS_REGION || "us-east-1";
+const accessKeyId = process.env.S3_ACCESS_KEY || process.env.AWS_ACCESS_KEY_ID;
+const secretAccessKey = process.env.S3_SECRET_KEY || process.env.AWS_SECRET_ACCESS_KEY;
 
+const parsed = endpoint ? parseUrl(endpoint) : null;
+const port = parsed?.port;
+const isHttps = parsed?.protocol === "https:";
+const isHttp = parsed?.protocol === "http:";
+const isDefaultPort =
+  !port || (isHttps && Number(port) === 443) || (isHttp && Number(port) === 80);
 
+// só cria signer custom se tiver porta não-padrão
+const signer =
+  endpoint && !isDefaultPort
+    ? async () => ({
+        sign: async (request) => {
+          // injeta host:porta antes de assinar
+          if (port) request.headers.host = `${request.hostname}:${port}`;
+
+          const sv4 = new SignatureV4({
+            credentials: { accessKeyId, secretAccessKey },
+            region,
+            service: "s3",
+            sha256: Sha256,
+          });
+
+          return sv4.sign(request);
+        },
+      })
+    : undefined;
 
 const s3 = new S3Client({
-  region: process.env.S3_REGION || process.env.AWS_REGION || "us-east-1",
-  endpoint: process.env.S3_ENDPOINT || undefined,
-  forcePathStyle: process.env.S3_FORCE_PATH_STYLE === "true", // MinIO precisa
-  credentials: {
-    accessKeyId: process.env.S3_ACCESS_KEY || process.env.AWS_ACCESS_KEY_ID,
-    secretAccessKey: process.env.S3_SECRET_KEY || process.env.AWS_SECRET_ACCESS_KEY,
-  },
+  region,
+  endpoint,                     // ex.: https://s3.connectcultura.org  (443 => sem signer)
+  forcePathStyle: process.env.S3_FORCE_PATH_STYLE === "true",
+  credentials: { accessKeyId, secretAccessKey },
+  signer,                       // só entra quando precisar (porta ≠ 443/80)
 });
 
-
-/**
- * Faz upload de um buffer para S3/MinIO.
- * @param {Buffer|Uint8Array} buffer
- * @param {string} key ex: "projects/123/file.png"
- * @param {string} contentType ex: "image/png"
- * @returns {string} URL do objeto
- */
+// helper de upload com ContentLength
 async function uploadFile(buffer, key, contentType = "application/octet-stream") {
   const Bucket = process.env.S3_BUCKET_NAME;
-  if (!Bucket) throw new Error("S3_BUCKET_NAME ausente");
-  if (!buffer || !buffer.length) throw new Error("buffer vazio");
-
-  // Importante: informar ContentLength pra evitar chunked e não quebrar a assinatura
-  const command = new PutObjectCommand({
+  const cmd = new PutObjectCommand({
     Bucket,
     Key: key,
     Body: buffer,
     ContentType: contentType,
     ContentLength: buffer.length,
-    // Cache-Control/ACL se precisar:
-    // CacheControl: "public, max-age=31536000, immutable",
-    // ACL: "public-read", // (AWS) MinIO geralmente ignora (prefira policy)
   });
+  await s3.send(cmd);
 
-   await s3.send(command);
-
-  // Monta URL sem encodear as barras do path
   const encodedBucket = encodeURIComponent(Bucket);
   const encodedKey = key.split("/").map(encodeURIComponent).join("/");
 
-  const url = isMinio
-    ? `${process.env.S3_ENDPOINT.replace(/\/+$/, "")}/${encodedBucket}/${encodedKey}`
-    : `https://${Bucket}.s3.${process.env.AWS_REGION || process.env.S3_REGION}.amazonaws.com/${encodedKey}`;
-
-
-  return url;
+  const isMinio = !!endpoint;
+  return isMinio
+    ? `${endpoint.replace(/\/+$/, "")}/${encodedBucket}/${encodedKey}`
+    : `https://${Bucket}.s3.${region}.amazonaws.com/${encodedKey}`;
 }
 
-module.exports = { uploadFile, s3 };
+module.exports = { s3, uploadFile };
