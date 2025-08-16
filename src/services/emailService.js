@@ -2,11 +2,10 @@ const nodemailer = require('nodemailer');
 const path = require('path');
 
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.MAIL_USER,
-    pass: process.env.MAIL_PASS,
-  },
+  host: "127.0.0.1", // Postfix local
+  port: 25,          // Porta SMTP do MTA
+  secure: false,     // STARTTLS não é usado na porta 25 local
+  tls: { rejectUnauthorized: false }, // evita frescura com cert local
 });
 
 async function sendEmail(to, subject, messageText) {
@@ -28,8 +27,12 @@ async function sendEmail(to, subject, messageText) {
   `;
 
   await transporter.sendMail({
-    from: process.env.MAIL_USER,
+    from: '"Cultura Connect" <no-reply@connectcultura.org>',
     to,
+    envelope: {
+      from: '"Cultura Connect" <no-reply@connectcultura.org>',
+      to,
+    },
     subject,
     text: messageText, // fallback para clientes sem suporte HTML
     html,
