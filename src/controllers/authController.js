@@ -123,7 +123,7 @@ async function login(req, res) {
   });
 
   logger.info('User login', user.id);
-
+  
   res.json({
     token,
     user: {

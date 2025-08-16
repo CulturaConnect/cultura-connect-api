@@ -27,11 +27,11 @@ async function findUsersByCpfs(cpfs) {
 }
 
 async function createPerson(user) {
-  const { nomeCompleto, cpf, email, telefone, senha, id } = user;
+  const { nome_completo, cpf, email, telefone, senha, id } = user;
   await User.create({
     id,
     type: 'person',
-    nome_completo: nomeCompleto,
+    nome_completo,
     cpf,
     email,
     telefone,
