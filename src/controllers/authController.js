@@ -277,6 +277,23 @@ async function checkResetCode(req, res) {
   res.json({ valid: true });
 }
 
+async function testEmail(req, res) {
+  const { email, subject, message } = req.body;
+  
+  if (!email || !subject || !message) {
+    throw new AppError('Email, assunto e mensagem são obrigatórios', 400);
+  }
+
+  try {
+    await sendEmail(email, subject, message);
+    logger.info('Test email sent successfully', { email, subject });
+    res.json({ message: 'Email enviado com sucesso!' });
+  } catch (error) {
+    logger.error('Failed to send test email', { email, error: error.message });
+    throw new AppError('Falha ao enviar email', 500);
+  }
+}
+
 module.exports = {
   registerPerson,
   registerCompany,
@@ -286,4 +303,5 @@ module.exports = {
   recoverPassword,
   resetPassword,
   checkResetCode,
+  testEmail,
 };

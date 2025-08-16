@@ -267,4 +267,48 @@ router.post('/reset', asyncHandler(authController.resetPassword));
  */
 router.post('/check-code', asyncHandler(authController.checkResetCode));
 
+/**
+ * @swagger
+ * /auth/test-email:
+ *   post:
+ *     summary: Testa o envio de email
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - subject
+ *               - message
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 description: Email de destino
+ *               subject:
+ *                 type: string
+ *                 description: Assunto do email
+ *               message:
+ *                 type: string
+ *                 description: Mensagem do email
+ *     responses:
+ *       200:
+ *         description: Email enviado com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *       400:
+ *         description: Dados inválidos
+ *       500:
+ *         description: Erro interno do servidor
+ */
+router.post('/test-email', asyncHandler(authController.testEmail));
+
 module.exports = router;
