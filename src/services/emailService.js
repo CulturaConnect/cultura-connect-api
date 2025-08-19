@@ -2,10 +2,13 @@ const nodemailer = require('nodemailer');
 const path = require('path');
 
 const transporter = nodemailer.createTransport({
-  host: "127.0.0.1", // Postfix local
-  port: 25,          // Porta SMTP do MTA
-  secure: false,     // STARTTLS não é usado na porta 25 local
-  tls: { rejectUnauthorized: false }, // evita frescura com cert local
+  host: process.env.SMTP_HOST || "smtp.hostinger.com",
+  port: parseInt(process.env.SMTP_PORT) || 587,
+  secure: process.env.SMTP_SECURE === 'true' || false, // true para 465, false para outras portas
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
+  },
 });
 
 async function sendEmail(to, subject, messageText) {
@@ -27,10 +30,10 @@ async function sendEmail(to, subject, messageText) {
   `;
 
   await transporter.sendMail({
-    from: '"Cultura Connect" <no-reply@connectcultura.org>',
+    from: `Cultura Connect`,
     to,
     envelope: {
-      from: '"Cultura Connect" <no-reply@connectcultura.org>',
+      from: `Cultura Connect`,
       to,
     },
     subject,
