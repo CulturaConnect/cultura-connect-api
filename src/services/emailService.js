@@ -1,10 +1,10 @@
-const nodemailer = require('nodemailer');
-const path = require('path');
+const nodemailer = require("nodemailer");
+const path = require("path");
 
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || "smtp.hostinger.com",
   port: parseInt(process.env.SMTP_PORT) || 587,
-  secure: process.env.SMTP_SECURE === 'true' || false, // true para 465, false para outras portas
+  secure: process.env.SMTP_SECURE === "true" || false, // true para 465, false para outras portas
   auth: {
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS,
@@ -30,15 +30,17 @@ async function sendEmail(to, subject, messageText) {
   `;
 
   await transporter.sendMail({
-    from: `Cultura Connect`,
+    from: `"Cultura Connect" <culturaconnect@connectcultura.org>`,
+    sender: "culturaconnect@connectcultura.org", // opcional, ajuda alguns provedores
     to,
     envelope: {
-      from: `Cultura Connect`,
+      from: "culturaconnect@connectcultura.org", // MAIL FROM (tem que ser válido)
       to,
     },
     subject,
-    text: messageText, // fallback para clientes sem suporte HTML
+    text: messageText,
     html,
+    replyTo: "culturaconnect@connectcultura.org",
   });
 }
 
